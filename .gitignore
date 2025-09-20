@@ -1,0 +1,54 @@
+# Gitignore Template for Django/Python Projects
+
+### General ###
+*.log
+*.pot
+*.py[cod]
+*.swp
+*~
+__pycache__/
+.python-version
+
+### Django ###
+# 로컬 테스트용 SQLite DB 파일
+db.sqlite3
+db.sqlite3-journal
+
+# 로컬 전용 설정 파일
+local_settings.py
+
+# 사용자가 업로드하는 미디어 파일 (저장소에 포함하지 않음)
+/media/
+
+### Environment ###
+.env
+.env.*
+# .env.example 파일은 예외적으로 항상 포함
+!/.env.example
+
+### Docker ###
+# 로컬에서 오버라이드하는 Docker 설정
+docker-compose.override.yml
+
+### IDEs ###
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Testing ###
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+pytest-report.html
+
+### Build ###
+build/
+dist/
+*.egg-info/
