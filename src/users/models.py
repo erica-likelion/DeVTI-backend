@@ -1,13 +1,21 @@
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
 
 # Create your models here.
-class User:
+class User(AbstractBaseUser, PermissionsMixin):
     """
     커스텀 유저 모델 정의
     """
 
-    pass
+    username = models.CharField(max_length=30, unique=True)
+
+    objects = BaseUserManager()
+
+    USERNAME_FIELD = "username"
+
+    class Meta:
+        db_table = "user"
 
 
 class Profile(models.Model):
@@ -15,7 +23,7 @@ class Profile(models.Model):
     공통 프로필
     """
 
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_id = models.ForeignKey("User", on_delete=models.CASCADE)
     devti = models.CharField(max_length=10, null=True)
     comment = models.TextField(null=True)
 
