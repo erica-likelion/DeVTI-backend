@@ -52,3 +52,6 @@ pytest-report.html
 build/
 dist/
 *.egg-info/
+
+### 가상환경
+.venv
