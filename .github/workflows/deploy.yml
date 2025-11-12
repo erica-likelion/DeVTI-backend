@@ -51,3 +51,4 @@ jobs:
             cd /root/devti
             docker compose pull web
             docker compose up -d
+            docker image prune -f
