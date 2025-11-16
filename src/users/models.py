@@ -28,6 +28,11 @@ class Profile(models.Model):
     user_id = models.ForeignKey("User", on_delete=models.CASCADE)
     devti = models.CharField(max_length=10, null=True)
     comment = models.TextField(null=True)
+    openness = models.IntegerField(null=True)
+    conscientiousness = models.IntegerField(null=True)
+    extraversion = models.IntegerField(null=True)
+    agreeableness = models.IntegerField(null=True)
+    neuroticism = models.IntegerField(null=True)
 
     class Meta:
         db_table = "profile"
