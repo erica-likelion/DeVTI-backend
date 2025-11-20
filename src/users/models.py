@@ -2,22 +2,51 @@ from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
+    BaseUserManager
 )
 
 
-# Create your models here.
+class UserManager(BaseUserManager):
+    """
+    커스텀 유저 매니저
+    """
+
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("이메일 필드가 작성되어야 합니다.")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        return self.create_user(email, password, **extra_fields)
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     """
-    커스텀 유저 모델 정의
+    커스텀 유저 모델
     """
+    username = models.CharField("사용자 이름", max_length=30)
+    email = models.EmailField("이메일", unique=True)
+    is_staff = models.BooleanField("관리자 권한", default=False)
+    is_superuser = models.BooleanField("슈퍼유저 권한", default=False)
+    is_active = models.BooleanField("활성 상태", default=True)
+    created_at = models.DateTimeField("가입일", auto_now_add=True)
 
-    username = models.CharField(max_length=30, unique=True)
-    email = models.EmailField()
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
 
-    USERNAME_FIELD = "username"
+    objects = UserManager()
 
     class Meta:
         db_table = "user"
+
+    def __str__(self):
+        return self.email
 
 
 class Profile(models.Model):

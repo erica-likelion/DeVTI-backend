@@ -19,17 +19,34 @@ from django.contrib import admin
 from django.urls import path, include
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from dj_rest_auth.registration.views import SocialLoginView
+
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.kakao.views import KakaoOAuth2Adapter
 
 schema_view = get_schema_view(
     openapi.Info(title="DevTI API", default_version="v1", description="DevTI 화이팅!!"),
     public=True,
 )
 
+
+class KakaoLogin(SocialLoginView):
+    adapter_class = KakaoOAuth2Adapter
+
+
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("swagger/", schema_view.with_ui("swagger")),
-    path("api/auth/", include("users.auth.urls")),
     path("api/matching/", include("matchings.matching.urls")),
     path("api/room/", include("matchings.room.urls")),
     path("api/profile/", include("users.profile.urls")),
+    path("api/auth/", include("dj_rest_auth.urls")),
+    path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
+    path("api/auth/kakao/", KakaoLogin.as_view(), name="kakao_login"),
+    path("api/auth/google/", GoogleLogin.as_view(), name="google_login"),
+    path("accounts/", include("allauth.urls")),
 ]
