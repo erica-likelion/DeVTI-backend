@@ -152,6 +152,10 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "users.auth.authentication.BearerTokenAuthentication",
     ),
+    "DEFAULT_RENDERER_CLASSES": (
+        "config.response_formats.CustomRenderer",
+    ),
+    "EXCEPTION_HANDLER": "config.response_formats.custom_exception_handler",
 }
 
 SOCIALACCOUNT_ADAPTER = "users.auth.adapter.CustomSocialAccountAdapter"
