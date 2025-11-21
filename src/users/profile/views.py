@@ -27,11 +27,8 @@ class ProfileView(APIView):
         user = request.user
         part = request.query_params.get('part')
 
-        # 소셜로그인 시 공통 프로필이 생성되지만 혹시 모를 상황 대비
-        try:
-            profile = get_object_or_404(Profile, user=user)
-        except Profile.DoesNotExist:
-            raise NotFound("공통 프로필이 존재하지 않습니다.")
+        # 공통 프로필 가져오기
+        profile = get_object_or_404(Profile, user=user)
         
         # available_parts 목록 계산
         available_parts = []
@@ -91,7 +88,7 @@ class ProfileView(APIView):
         PartModel = dispatcher['model']
         PartSerializer = dispatcher['serializer']
 
-        # 공통 Profile 가져오기 (소셜 로그인 시점에 생성)
+        # 공통 프로필 가져오기
         profile = get_object_or_404(Profile, user=user)
         
         # 이미 해당 part의 프로필이 존재하면 에러 발생 (이미 있으면 PUT 메서드로 수정만 가능)
@@ -135,10 +132,7 @@ class ProfileView(APIView):
         part = request.query_params.get('part')
 
         # 공통 프로필 가져오기
-        try:
-            profile = Profile.objects.get(user=user)
-        except Profile.DoesNotExist:
-            raise NotFound("공통 프로필이 존재하지 않습니다.")
+        profile = get_object_or_404(Profile, user=user)
         
         # 수정 로직
         # Profile과 User 두 테이블을 건드리기 때문에 트랜잭션 사용
