@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import *
 
 #PM post
-class ProfilePMCreateSerializer(serializers.ModelSerializer):
+class ProfilePMSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfilePM
         fields = [
@@ -15,7 +15,7 @@ class ProfilePMCreateSerializer(serializers.ModelSerializer):
         ]
 
 #FE post
-class ProfileFECreateSerializer(serializers.ModelSerializer):
+class ProfileFESerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfileFE
         fields = [
@@ -26,7 +26,7 @@ class ProfileFECreateSerializer(serializers.ModelSerializer):
         ]
 
 #BE post
-class ProfileBECreateSerializer(serializers.ModelSerializer):
+class ProfileBESerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfileBE
         fields = [
@@ -37,7 +37,7 @@ class ProfileBECreateSerializer(serializers.ModelSerializer):
         ]
 
 # DE post
-class ProfileDECreateSerializer(serializers.ModelSerializer):
+class ProfileDESerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfileDE
         fields = [

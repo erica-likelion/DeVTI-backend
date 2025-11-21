@@ -16,10 +16,10 @@ def participant_profile_view(request):
 
 # 쿼리 파라미터와 해당 파트의 serializer/model/message를 매핑
 PART_DISPATCHER = {
-    'PM': {'serializer': ProfilePMCreateSerializer, 'model': ProfilePM, 'message': 'PM 프로필 생성 완료'},
-    'FE': {'serializer': ProfileFECreateSerializer, 'model': ProfileFE, 'message': 'FE 프로필 생성 완료'},
-    'BE': {'serializer': ProfileBECreateSerializer, 'model': ProfileBE, 'message': 'BE 프로필 생성 완료'},
-    'DE': {'serializer': ProfileDECreateSerializer, 'model': ProfileDE, 'message': 'DE 프로필 생성 완료'},
+    'PM': {'serializer': ProfilePMSerializer, 'model': ProfilePM, 'message': 'PM 프로필 생성 완료'},
+    'FE': {'serializer': ProfileFESerializer, 'model': ProfileFE, 'message': 'FE 프로필 생성 완료'},
+    'BE': {'serializer': ProfileBESerializer, 'model': ProfileBE, 'message': 'BE 프로필 생성 완료'},
+    'DE': {'serializer': ProfileDESerializer, 'model': ProfileDE, 'message': 'DE 프로필 생성 완료'},
 }
 
 class ProfileView(APIView):
