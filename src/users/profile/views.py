@@ -5,7 +5,6 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError, ParseError, NotFound
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from rest_framework.permissions import IsAuthenticated
 from .models import *
 from .serializers import *
 
