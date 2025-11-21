@@ -156,6 +156,9 @@ REST_FRAMEWORK = {
         "config.response_formats.CustomRenderer",
     ),
     "EXCEPTION_HANDLER": "config.response_formats.custom_exception_handler",
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated"
+    ],
 }
 
 SOCIALACCOUNT_ADAPTER = "users.auth.adapter.CustomSocialAccountAdapter"

@@ -20,6 +20,7 @@ from django.urls import path, include
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from dj_rest_auth.registration.views import SocialLoginView
+from rest_framework.permissions import AllowAny
 
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.kakao.views import KakaoOAuth2Adapter
@@ -32,10 +33,12 @@ schema_view = get_schema_view(
 
 class KakaoLogin(SocialLoginView):
     adapter_class = KakaoOAuth2Adapter
+    permission_classes = [AllowAny]
 
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
+    permission_classes = [AllowAny]
 
 
 urlpatterns = [
