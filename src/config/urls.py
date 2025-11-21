@@ -48,7 +48,6 @@ urlpatterns = [
     path("api/room/", include("matchings.room.urls")),
     path("api/profile/", include("users.profile.urls")),
     path("api/auth/", include("dj_rest_auth.urls")),
-    path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
     path("api/auth/kakao/", KakaoLogin.as_view(), name="kakao_login"),
     path("api/auth/google/", GoogleLogin.as_view(), name="google_login"),
     path("accounts/", include("allauth.urls")),
