@@ -15,6 +15,7 @@ class Participant(models.Model):
     team_vibe = models.CharField(max_length=10)
     active_hours = models.CharField(max_length=10)
     meeting_preference = models.CharField(max_length=10)
+    carrot = models.BooleanField(default=False)
 
     class Meta:
         db_table = "participant"

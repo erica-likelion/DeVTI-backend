@@ -10,9 +10,30 @@ from ..models import Wagging, Participant
 
 
 @api_view(["POST"])
-def carrot_control_view(request):
-    pass
-    return Response("응답 예시")
+def carrot_control_view(request, participant_id):
+    participant = Participant.objects.filter(id=participant_id).first()
+
+    # 존재하지 않는 참가자가 당근 흔들기 요청
+    if not participant:
+        raise NotFound(f"존재하지 않는 참가자입니다. {participant_id}")
+
+    response_message = (
+        "당근을 흔들었습니니다."
+        if participant.carrot == False
+        else "당근 흔들기를 멈췄습니다."
+    )
+    participant.carrot = not participant.carrot
+    participant.save()
+    return Response(
+        data={
+            "status": "success",
+            "code": 200,
+            "data": {},
+            "message": response_message,
+            "detail": None,
+        },
+        status=200,
+    )
 
 
 @swagger_auto_schema(method="POST", request_body=WaggingSerializer)
