@@ -1,4 +1,8 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from django.contrib.auth import get_user_model
+from users.models import Profile
+
+User = get_user_model()
 
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
@@ -20,5 +24,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
 
         user.username = username_candidate
         user.save()
+
+        Profile.objects.create(user_id=user)
 
         return user
