@@ -130,9 +130,76 @@ class ProfileView(APIView):
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 
-
     def put(self, request):
-        return Response("응답 예시")
+        user = request.user
+        part = request.query_params.get('part')
+
+        # 공통 프로필 가져오기
+        try:
+            profile = Profile.objects.get(user=user)
+        except Profile.DoesNotExist:
+            raise NotFound("공통 프로필이 존재하지 않습니다.")
+        
+        # 수정 로직
+        # Profile과 User 두 테이블을 건드리기 때문에 트랜잭션 사용
+        try:
+            with transaction.atomic():
+                if not part: # part 파라미터가 없는 경우(공통 프로필 수정)
+                    if 'username' in request.data:
+                        user.username = request.data['username']
+                        user.save()
+                    if 'comment' in request.data:
+                        profile.comment = request.data['comment']
+                        profile.save()
+                    message = "공통 프로필 수정 완료"
+                    part_data = {} # 공통 프로필 수정은 별도의 파트 데이터가 없음
+                
+                else: # part 파라미터가 있는 경우(파트별 프로필 수정)
+                    if part not in PART_DISPATCHER:
+                        raise ParseError("part 쿼리 파라미터가 유효하지 않습니다. (허용 값: PM, FE, BE, DE)")
+                    
+                    dispatcher = PART_DISPATCHER[part]
+                    PartModel = dispatcher['model']
+                    PartSerializer = dispatcher['serializer']
+
+                    # 수정할 파트 데이터 찾기
+                    try:
+                        part_instance = PartModel.objects.get(profile_id=profile)
+                    except PartModel.DoesNotExist:
+                        raise NotFound(f"해당 파트({part})의 프로필이 존재하지 않습니다. (POST로 생성 필요)")
+                    
+                    serializer = PartSerializer(part_instance, data=request.data, partial=True)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                    message = f"{part} 프로필 수정 완료"
+                    part_data = serializer.data # 수정한 part_data 응답에 추가로 넘기기 위해 변수에 담아놓기
+
+        except Exception as e:
+            raise e
+        
+        # 최종 응답 데이터
+        available_parts = []
+        if ProfilePM.objects.filter(profile_id=profile).exists(): available_parts.append("PM")
+        if ProfileFE.objects.filter(profile_id=profile).exists(): available_parts.append("FE")
+        if ProfileBE.objects.filter(profile_id=profile).exists(): available_parts.append("BE")
+        if ProfileDE.objects.filter(profile_id=profile).exists(): available_parts.append("DE")
+
+        response_data = {
+            "username": user.username,
+            "email": user.email,
+            "devti": profile.devti,
+            "comment": profile.comment,
+            "available_parts": available_parts,
+            "part": part
+        }
+
+        # 파트별 수정이라면 그 데이터(part_data)까지 response_data에 병합
+        if part:
+            response_data.update(part_data)
+        
+        response_data['message'] = message
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class DevtiView(APIView):
