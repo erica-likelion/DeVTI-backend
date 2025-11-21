@@ -24,7 +24,59 @@ PART_DISPATCHER = {
 
 class ProfileView(APIView):
     def get(self, request):
-        return Response("응답 예시")
+        user = request.user
+        part = request.query_params.get('part')
+
+        # 소셜로그인 시 공통 프로필이 생성되지만 혹시 모를 상황 대비
+        try:
+            profile = get_object_or_404(Profile, user=user)
+        except Profile.DoesNotExist:
+            raise NotFound("공통 프로필이 존재하지 않습니다.")
+        
+        # available_parts 목록 계산
+        available_parts = []
+        if ProfilePM.objects.filter(profile_id=profile).exists(): available_parts.append("PM")
+        if ProfileFE.objects.filter(profile_id=profile).exists(): available_parts.append("FE")
+        if ProfileBE.objects.filter(profile_id=profile).exists(): available_parts.append("BE")
+        if ProfileDE.objects.filter(profile_id=profile).exists(): available_parts.append("DE")
+         
+         # 기본 응답 데이터 구성
+        response_data = {
+            "username": user.username,
+            "email": user.email,
+            "devti": profile.devti,
+            "comment": profile.comment,
+            "available_parts": available_parts,
+            "part": part, #파라미터에 없으면 None
+         }
+        
+        # 분기 처리
+        if not part:
+            # 파라미터가 없는 경우(= 공통 프로필 조회인 경우)
+            message = "공통 프로필 조회 완료"
+
+        else:
+            # 파라미터에 파트 있는 경우(= 파트별 조회인 경우)
+            if part not in PART_DISPATCHER:
+                raise ParseError("part 쿼리 파라미터가 유요하지 않습니다. (허용 값: PM, FE, BE, DE)")
+            
+            dispatcher = PART_DISPATCHER[part]
+            PartModel = dispatcher['model']
+            PartSerializer = dispatcher['serializer']
+
+            # 해당 파트 프로필이 작성되어 있는지 확인
+            try:
+                part_instance = PartModel.objects.get(profile_id=profile)
+            except PartModel.DoesNotExist:
+                raise NotFound(f"해당 파트({part})의 프로필 데이터가 없습니다.")
+            
+            serializer = PartSerializer(part_instance)
+
+            response_data.update(serializer.data)
+            message = f"{part} 프로필 조회 완료"
+
+        response_data['message'] = message
+        return Response(response_data, status=status.HTTP_200_OK)
 
     def post(self, request):
         user = request.user
