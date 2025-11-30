@@ -12,7 +12,7 @@ CREATE TABLE wagging (
 wagging은 좋아요를 누르는 것과 같은 기능이야.
 wagger는 좋아요를 누른 주체를 의미하고, waggee는 좋아요의 대상을 의미해.
 wagger와 waggee 모두 외래키이며, 정수 값을 가져.
-wagger와 waggee가 참조하고 있는 테이블(participant)의 PK가 1~33까지 있어.
+wagger와 waggee가 참조하고 있는 테이블(participant)의 PK가 1~40까지 있어.
 모든 participant 개체가 3~6명 중 랜덤한 개수 만큼의 사람에게 wagging을 한 임의의 데이터를 생성해줘.
 단, 한 사람이 같은 사람에게 두 번 wagging 할 수는 없어.
 
