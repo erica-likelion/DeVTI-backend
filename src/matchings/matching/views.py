@@ -6,7 +6,7 @@ from rest_framework.exceptions import ParseError, NotFound
 from drf_yasg.utils import swagger_auto_schema
 
 from .serializers import WaggingSerializer
-from ..models import Wagging, Participant
+from ..models import Wagging, Participant, Room
 
 
 @api_view(["POST"])
@@ -42,6 +42,19 @@ def wagging_control_view(request):
     """ """
     serializer = WaggingSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+
+    # 자기자신에게 꼬리를 흔드는 경우 제외
+    if serializer.validated_data["wagger"] == serializer.validated_data["waggee"]:
+        return Response(
+            data={
+                "status": "bad request",
+                "code": 400,
+                "data": {},
+                "message": "자기자신에게 꼬리를 흔들 수 없습니다.",
+                "detail": None,
+            },
+            status=400,
+        )
 
     saved_wagging = Wagging.objects.filter(
         wagger=serializer.validated_data["wagger"],
