@@ -15,7 +15,16 @@ def carrot_control_view(request, participant_id):
 
     # 존재하지 않는 참가자가 당근 흔들기 요청
     if not participant:
-        raise NotFound(f"존재하지 않는 참가자입니다. {participant_id}")
+        return Response(
+            data={
+                "status": "not found",
+                "code": 404,
+                "data": {},
+                "message": f"존재하지 않는 참가자입니다. id: {participant_id}",
+                "detail": None,
+            },
+            status=200,
+        )
 
     response_message = (
         "당근을 흔들었습니니다."
