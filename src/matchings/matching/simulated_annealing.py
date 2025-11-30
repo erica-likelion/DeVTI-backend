@@ -227,11 +227,10 @@ def evaluate_solution(team_list: list[list[dict]], waggings: list[dict] = None):
     ) / len(category_scores)
 
     # 꼬리흔들기 점수 계산 (높을수록 좋음)
-    wagging_scores = []
-    if waggings:
-        wagging_scores = get_wagging_score(team_list, waggings)
-    else:
-        wagging_scores = [0] * len(team_list)
+    wagging_scores, _ = get_wagging_score(team_list, waggings)
+
+    # 꼬리흔들기에 성공하지 못한 사람의 수를 계산 후 패널티 부여
+    wagging_fail_count = wagging_scores.count(0)
 
     wagging_mean = sum(wagging_scores) / len(wagging_scores)
     wagging_variance = sum(
@@ -244,6 +243,7 @@ def evaluate_solution(team_list: list[list[dict]], waggings: list[dict] = None):
     w_category_var = 0.1  # 팀 간 카테고리 균형
     w_wagging_mean = 2.0  # 꼬리흔들기 매칭의 평균 품질
     w_wagging_var = 0.1  # 팀 간 꼬리흔들기 균형
+    w_wagging_penalty = 50.0  # 꼬리흔들기 매칭 실패 패널티
 
     # 높은 점수를 낮은 비용으로 변환 (음수 사용)
     # 분산은 그대로 사용 (낮을수록 좋음)
@@ -252,12 +252,13 @@ def evaluate_solution(team_list: list[list[dict]], waggings: list[dict] = None):
         + w_category_var * category_variance  # 분산이 낮을수록 비용 감소
         + -w_wagging_mean * wagging_mean  # 꼬리흔들기 평균이 높을수록 비용 감소
         + w_wagging_var * wagging_variance  # 분산이 낮을수록 비용 감소
+        + w_wagging_penalty * wagging_fail_count
     )
 
     return score
 
 
-def _neighbor_solution(teams):
+def neighbor_solution(teams):
     """
     현재 팀 매칭에서 두 명의 멤버를 교환하여 이웃 해를 생성
 
@@ -329,7 +330,7 @@ def simulated_annealing(
     while T > min_temp and iteration < max_iterations:
 
         # 1) neighbor 생성
-        new_solution = _neighbor_solution(current_solution)
+        new_solution = neighbor_solution(current_solution)
         new_score = evaluate_solution(new_solution, waggings)
 
         # 2) score 차이
