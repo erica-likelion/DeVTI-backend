@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError, ParseError, NotFound
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from .models import *
+from users.models import *
 from .serializers import *
 
 @api_view(["GET"])
@@ -27,7 +27,7 @@ class ProfileView(APIView):
         part = request.query_params.get('part')
 
         # 공통 프로필 가져오기
-        profile = get_object_or_404(Profile, user=user)
+        profile = get_object_or_404(Profile, user_id=user)
         
         # available_parts 목록 계산
         available_parts = []
@@ -88,7 +88,7 @@ class ProfileView(APIView):
         PartSerializer = dispatcher['serializer']
 
         # 공통 프로필 가져오기
-        profile = get_object_or_404(Profile, user=user)
+        profile = get_object_or_404(Profile, user_id=user)
         
         # 이미 해당 part의 프로필이 존재하면 에러 발생 (이미 있으면 PUT 메서드로 수정만 가능)
         if PartModel.objects.filter(profile_id = profile).exists():
@@ -131,7 +131,7 @@ class ProfileView(APIView):
         part = request.query_params.get('part')
 
         # 공통 프로필 가져오기
-        profile = get_object_or_404(Profile, user=user)
+        profile = get_object_or_404(Profile, user_id=user)
         
         # 수정 로직
         # Profile과 User 두 테이블을 건드리기 때문에 트랜잭션 사용
