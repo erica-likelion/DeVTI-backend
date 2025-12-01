@@ -28,6 +28,7 @@ from allauth.socialaccount.providers.kakao.views import KakaoOAuth2Adapter
 schema_view = get_schema_view(
     openapi.Info(title="DevTI API", default_version="v1", description="DevTI 화이팅!!"),
     public=True,
+    permission_classes=[AllowAny],
 )
 
 

@@ -6,7 +6,7 @@ from rest_framework.exceptions import ParseError, NotFound
 from drf_yasg.utils import swagger_auto_schema
 
 from .serializers import WaggingSerializer
-from ..models import Wagging, Participant
+from ..models import Wagging, Participant, Room
 
 
 @api_view(["POST"])
@@ -15,7 +15,16 @@ def carrot_control_view(request, participant_id):
 
     # 존재하지 않는 참가자가 당근 흔들기 요청
     if not participant:
-        raise NotFound(f"존재하지 않는 참가자입니다. {participant_id}")
+        return Response(
+            data={
+                "status": "not found",
+                "code": 404,
+                "data": {},
+                "message": f"존재하지 않는 참가자입니다. id: {participant_id}",
+                "detail": None,
+            },
+            status=200,
+        )
 
     response_message = (
         "당근을 흔들었습니니다."
@@ -42,6 +51,19 @@ def wagging_control_view(request):
     """ """
     serializer = WaggingSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+
+    # 자기자신에게 꼬리를 흔드는 경우 제외
+    if serializer.validated_data["wagger"] == serializer.validated_data["waggee"]:
+        return Response(
+            data={
+                "status": "bad request",
+                "code": 400,
+                "data": {},
+                "message": "자기자신에게 꼬리를 흔들 수 없습니다.",
+                "detail": None,
+            },
+            status=400,
+        )
 
     saved_wagging = Wagging.objects.filter(
         wagger=serializer.validated_data["wagger"],
