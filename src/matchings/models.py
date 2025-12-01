@@ -15,7 +15,15 @@ class Participant(models.Model):
     team_vibe = models.CharField(max_length=10)
     active_hours = models.CharField(max_length=10)
     meeting_preference = models.CharField(max_length=10)
+<<<<<<< HEAD
     carrot = models.BooleanField(default=False)
+=======
+    openness = models.FloatField(null=True)
+    conscientiousness = models.FloatField(null=True)
+    extraversion = models.FloatField(null=True)
+    agreeableness = models.FloatField(null=True)
+    neuroticism = models.FloatField(null=True)
+>>>>>>> main
 
     class Meta:
         db_table = "participant"
