@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
 
 from matchings.models import Room, Participant
 from .serializers import (
@@ -60,6 +60,30 @@ class RoomView(APIView):
 
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RoomDetailView(APIView):
+    def delete(self, request, room_id):
+        """
+        매칭룸 삭제
+        """
+        try:
+            room = Room.objects.get(id=room_id)
+        except Room.DoesNotExist:
+            raise NotFound("해당 매칭룸을 찾을 수 없습니다.")
+
+        # 요청한 사용자가 해당 방의 ADMIN인지 확인
+        is_admin = Participant.objects.filter(
+            room_id=room,
+            user_id=request.user,
+            role=Participant.Role.ADMIN
+        ).exists()
+
+        if not is_admin:
+            raise PermissionDenied("이 매칭룸을 삭제할 권한이 없습니다.")
+
+        room.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
