@@ -48,6 +48,27 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+    def get_completed_profile_parts(self):
+        parts = []
+        try:
+            profile = self.profile_set.first()
+            if not profile:
+                return parts
+
+            if hasattr(profile, "profilepm") and profile.profilepm is not None:
+                parts.append("PM")
+            if hasattr(profile, "profilefe") and profile.profilefe is not None:
+                parts.append("FE")
+            if hasattr(profile, "profilebe") and profile.profilebe is not None:
+                parts.append("BE")
+            if hasattr(profile, "profilede") and profile.profilede is not None:
+                parts.append("DE")
+
+            return parts
+
+        except Exception:
+            return []
+
 
 class Profile(models.Model):
     """

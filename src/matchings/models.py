@@ -4,17 +4,21 @@ from django.db import models
 # Create your models here.
 class Participant(models.Model):
     """
-    매칭 참가자 테이믈
+    매칭 참가자 테이블
     """
+
+    class Role(models.TextChoices):
+        ADMIN = "ADMIN", "운영진"
+        PARTICIPANT = "PARTICIPANT", "참가자"
 
     room_id = models.ForeignKey("Room", on_delete=models.CASCADE)
     user_id = models.ForeignKey("users.User", on_delete=models.CASCADE)
     username = models.CharField(max_length=30)
-    role = models.CharField(max_length=10)
-    part = models.CharField(max_length=10)
-    team_vibe = models.CharField(max_length=10)
-    active_hours = models.CharField(max_length=10)
-    meeting_preference = models.CharField(max_length=10)
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.PARTICIPANT)
+    part = models.CharField(max_length=10, null=True, blank=True)
+    team_vibe = models.CharField(max_length=10, null=True, blank=True)
+    active_hours = models.CharField(max_length=10, null=True, blank=True)
+    meeting_preference = models.CharField(max_length=10, null=True, blank=True)
     openness = models.FloatField(null=True)
     conscientiousness = models.FloatField(null=True)
     extraversion = models.FloatField(null=True)
@@ -48,12 +52,18 @@ class Room(models.Model):
     """
     매칭룸 테이블
     """
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "대기"
+        WAGGING = "WAGGING", "꼬리 흔들기"
+        MATCHING = "MATCHING", "매칭"
+        COMPLETED = "COMPLETED", "완료"
+        CLOSED = "CLOSED", "닫힘"
 
     room_name = models.CharField(max_length=30)
     participant_code = models.CharField(max_length=10)
     admin_code = models.CharField(max_length=10)
     matching_at = models.DateTimeField()
-    status = models.CharField(max_length=30)
+    status = models.CharField(max_length=30, choices=Status.choices, default=Status.PENDING)
     carrot_count = models.IntegerField(default=0)
 
     class Meta:
