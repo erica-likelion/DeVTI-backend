@@ -48,12 +48,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
-    def get_completed_profile_parts(self):
+    @property
+    def available_parts(self):
+        """
+        작성 완료한 파트별 프로필 목록 반환
+        """
         parts = []
         try:
             profile = self.profile_set.first()
-            if not profile:
-                return parts
 
             if hasattr(profile, "profilepm") and profile.profilepm is not None:
                 parts.append("PM")
