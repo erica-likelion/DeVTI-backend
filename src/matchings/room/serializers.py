@@ -24,7 +24,7 @@ class RoomListSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "role", "status")
 
 
-class RoomJoinSerializer(serializers.Serializer):
+class ParticipantCreateSerializer(serializers.Serializer):
     """
     참가자 생성 시리얼라이저
     """

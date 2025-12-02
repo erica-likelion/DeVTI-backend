@@ -10,7 +10,7 @@ from .serializers import (
     RoomListSerializer,
     CodeValidationSerializer,
     AdminCodeValidationSerializer,
-    RoomJoinSerializer
+    ParticipantCreateSerializer
 )
 from ..utils import generate_unique_code, validate_room_entry
 
@@ -117,7 +117,7 @@ def room_join_view(request):
     """
     참가자로 참여
     """
-    serializer = RoomJoinSerializer(data=request.data)
+    serializer = ParticipantCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
     participant_code = serializer.validated_data["participant_code"]
