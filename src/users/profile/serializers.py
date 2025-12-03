@@ -46,3 +46,12 @@ class ProfileDESerializer(serializers.ModelSerializer):
             'portfolio_url', 
             'design_score'
         ]
+
+# devti 
+class DevtiTestSerializer(serializers.Serializer):
+    answers = serializers.ListField(
+        child=serializers.IntegerField(min_value=0, max_value=4), # 응답은 0-4로 고정
+        min_length=28, 
+        max_length=28, # min, max를 둘다 28로 한정해서 응답 수 28개로 고정
+        allow_empty=False
+    )

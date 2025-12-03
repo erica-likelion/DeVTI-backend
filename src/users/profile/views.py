@@ -198,7 +198,50 @@ class ProfileView(APIView):
 class DevtiView(APIView):
 
     def post(self, request):
-        return Response("응답 예시")
+        return self.process_devti(request)
 
     def put(self, request):
-        return Response("응답 예시")
+        return self.process_devti(request)
+    
+    def process_devti(self, request):
+        # post, put 공통 로직 처리 메서드 
+        user = request.user
+
+        # 프로필 가져오기
+        profile = get_object_or_404(Profile, user_id=user)
+
+        # 받은 데이터 유효성 검사 
+        serializer = DevtiTestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # 답변 리스트 추출 
+        answers = serializer.validated_data['answers']
+
+        # devti 결과 계산 함수에 넣어서 값 받아오기
+        new_devti = self.calculate_devti(answers)
+
+        # devti 업데이트/저장
+        profile.devti = new_devti
+        profile.save()
+
+        # response_data 구성
+        response_data = {
+            "username": user.username,
+            "devti": profile.devti,
+            "message": "devti result saved"
+        }
+
+        # status_code 판별 (post면 201, put이면 200)
+        if request.method == 'POST':
+            status_code = status.HTTP_201_CREATED
+        else:
+            status_code = status.HTTP_200_OK
+
+        return Response(response_data, status=status_code)
+
+    def calculate_devti(self, answers):
+        """
+        추후에 질문 정해지면 devti 정해서 반환하는 함수 (현재는 임시 devti 반환만)
+        """
+        return "test_devti"
+
