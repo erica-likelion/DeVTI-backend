@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from users.models import *
+from matchings.models import Participant
 
 #PM post
 class ProfilePMSerializer(serializers.ModelSerializer):
@@ -55,3 +56,16 @@ class DevtiTestSerializer(serializers.Serializer):
         max_length=28, # min, max를 둘다 28로 한정해서 응답 수 28개로 고정
         allow_empty=False
     )
+
+# 매칭 참가자 PR정보 조회용
+class ParticipantPRSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Participant
+        fields = [
+            'id',
+            'username',
+            'part',
+            'team_vibe',
+            'active_hours',
+            'meeting_preference'
+        ]

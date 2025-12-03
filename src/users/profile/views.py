@@ -6,12 +6,8 @@ from rest_framework.exceptions import ValidationError, ParseError, NotFound
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from users.models import *
+from matchings.models import Participant
 from .serializers import *
-
-@api_view(["GET"])
-def participant_profile_view(request):
-    return Response("응답 예시")
-
 
 # 쿼리 파라미터와 해당 파트의 serializer/model/message를 매핑
 PART_DISPATCHER = {
@@ -20,6 +16,56 @@ PART_DISPATCHER = {
     'BE': {'serializer': ProfileBESerializer, 'model': ProfileBE, 'message': 'BE 프로필 생성 완료'},
     'DE': {'serializer': ProfileDESerializer, 'model': ProfileDE, 'message': 'DE 프로필 생성 완료'},
 }
+
+@api_view(["GET"])
+def participant_profile_view(request,participant_id):
+    # 참가자 객체 조회
+    participant = get_object_or_404(Participant, id=participant_id)
+    
+    # 참가자의 해당 매칭에서의 파트 확인
+    part = participant.part
+
+    if part not in PART_DISPATCHER:
+        raise ParseError(f"참가자의 파트 정보({part})가 유효하지 않습니다.")
+
+    # 파트에 맞는 Serializer, Model 가져오기
+    dispatcher = PART_DISPATCHER[part]
+    PartModel = dispatcher['model']
+    PartSerializer = dispatcher['serializer']
+
+    # 참가자의 유저 프로필 찾기
+    target_user = participant.user_id
+
+    # 공통 프로필 & 파트별 상세 프로필 가져오기
+    common_profile = get_object_or_404(Profile, user_id=target_user)
+
+    try:
+        part_profile = PartModel.objects.get(profile_id=common_profile)
+    except PartModel.DoesNotExist:
+        raise NotFound("참가자의 상세 프로필 정보가 존재하지 않습니다.")
+    
+    # pr 정보
+    pr_data = ParticipantPRSerializer(participant).data
+
+    # 공통 프로필 + 파트 프로필
+    profile_data = {
+        "id": common_profile.id,
+        "devti": common_profile.devti,
+        "comment": common_profile.comment,
+        "part": part,
+    }
+    part_serializer = PartSerializer(part_profile)
+    profile_data.update(part_serializer.data)
+
+    # 최종 응답 데이터 구성(pr+프로필)
+    response_data = {
+        "pr": pr_data,
+        "profile": profile_data,
+        "message": f"id: {participant_id}번 {participant.username} 프로필 조회"
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
 
 class ProfileView(APIView):
     def get(self, request):
