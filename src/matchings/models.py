@@ -57,11 +57,20 @@ class Room(models.Model):
     매칭룸 테이블
     """
 
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "대기"
+        WAGGING = "WAGGING", "꼬리 흔들기"
+        MATCHING = "MATCHING", "매칭"
+        COMPLETED = "COMPLETED", "완료"
+        CLOSED = "CLOSED", "닫힘"
+
     room_name = models.CharField(max_length=30)
     participant_code = models.CharField(max_length=10)
     admin_code = models.CharField(max_length=10)
     matching_at = models.DateTimeField()
-    status = models.CharField(max_length=30)
+    status = models.CharField(
+        max_length=30, choices=Status.choices, default=Status.PENDING
+    )
     carrot_count = models.IntegerField(default=0)
 
     class Meta:

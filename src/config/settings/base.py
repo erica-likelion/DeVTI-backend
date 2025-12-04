@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.kakao",
     "dj_rest_auth",
     "dj_rest_auth.registration",
+
+    # Channels
+    "channels",
 ]
 
 MIDDLEWARE = [
@@ -72,6 +75,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
+
+ASGI_APPLICATION = "config.asgi.application"
+
+# Channel Layer
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
+        "CONFIG": {
+            "hosts": [os.getenv("REDIS_URL", "redis://localhost:6379/1")],
+        },
+    },
+}
 
 
 # Database
