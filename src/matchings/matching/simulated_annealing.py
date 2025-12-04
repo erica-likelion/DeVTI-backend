@@ -3,10 +3,7 @@ import math
 
 from category_score import get_category_score
 from wagging_score import get_wagging_score
-
-
-TEAM_COUNT = 7  # 생성할 팀의 개수
-PART_MIN = {"pm": 0, "de": 1, "fe": 2, "be": 2}  # 파트별 최소 인원수
+from parameter import TEAM_COUNT, PART_MIN
 
 
 def _get_team_template(participant_list: list[dict]) -> list[str, int]:
