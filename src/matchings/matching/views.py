@@ -1,12 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.exceptions import ParseError, NotFound
 
 from drf_yasg.utils import swagger_auto_schema
 
 from .serializers import WaggingSerializer
-from ..models import Wagging, Participant, Room
+from ..models import Wagging, Participant, Room, Team, Result, Member
+
+from simulated_annealing import random_team_assignment, simulated_annealing
+from explain import get_matching_explanations
 
 
 @api_view(["POST"])
@@ -107,5 +109,46 @@ class MatchingView(APIView):
         return Response("응답 예시")
 
     def post(self, request, room_id):
-        pass
-        return Response("응답 예시")
+        matching_room = Room.objects.filter(id=room_id).first()
+
+        # 존재하지 않는 매칭룸을 요청
+        if not matching_room:
+            return Response(
+                data={
+                    "status": "not found",
+                    "code": 404,
+                    "data": {},
+                    "message": "매칭룸을 찾을 수 없습니다.",
+                    "detail": None,
+                },
+                status=200,
+            )
+        participant_list = Participant.objects.filter(room=matching_room)
+        participant_ids = participant_list.values_list("id", flat=True)
+        waggings = Wagging.objects.filter(wagger__id__in=participant_ids)
+        initial_team = random_team_assignment(participant_list)
+        best_team_list, score = simulated_annealing(initial_team, waggings)
+        explanations = get_matching_explanations(best_team_list, waggings)
+
+        # 새로운 매칭 결과를 저장
+        result = Result.objects.create(room=matching_room)
+        for i, team in enumerate(best_team_list):
+            team_instance = Team.objects.create(
+                team_number=i + 1, result=result, explanation=explanations[i]
+            )
+
+            for member in team:
+                member_instance = Member.objects.create(
+                    team=team_instance, participant=member["id"]
+                )
+
+        return Response(
+            data={
+                "status": "ok",
+                "code": 200,
+                "data": {},
+                "message": "매칭룸을 찾을 수 없습니다.",
+                "detail": None,
+            },
+            status=200,
+        )

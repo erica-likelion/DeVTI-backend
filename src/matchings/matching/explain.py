@@ -1,9 +1,3 @@
-"""
-TODO:
-    - 팀별로 카테고리 데이터에서 가장 일치도가 높은 것을 바탕으로 설명
-    - 다른 팀에 비해 우리팀의 성격 유형이 어떤지를 설명 (다른팀 보다 외향적이에요! 활기차게 팀플해봐요) 어떻게 팀플을 해나가면 좋을지는 LLM에게 맏기기
-"""
-
 import json
 from parameter import CATEGORY, PART_MIN
 from category_score import _get_team_category_rate
@@ -127,7 +121,7 @@ def _get_team_info_list(team_list, waggings):
     return team_info_list
 
 
-def get_matching_explanations(team_list):
+def get_matching_explanations(team_list, waggings):
     """
     Args:
         - team_list = [
@@ -155,8 +149,6 @@ def get_matching_explanations(team_list):
     Returns:
         - reasons: 각 팀마다 팀 매칭 설명을 담아서 반환
     """
-    with open("sample_data/wagging.json", "r", encoding="utf-8") as f:
-        waggings = json.load(f)
     team_info_list = _get_team_info_list(team_list, waggings)
     response = call_llm("gpt", team_info_list)
 

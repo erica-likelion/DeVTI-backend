@@ -1,5 +1,3 @@
-# TODO: 팀원들간의 카테고리 데이터 유사도를 구해야함. 현재는 팀의 카테고리 단순 통계를 활용 중.
-
 from math import log
 from parameter import CATEGORY
 
