@@ -1,10 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.db import transaction
 
 from drf_yasg.utils import swagger_auto_schema
 
-from .serializers import WaggingSerializer
+from .serializers import WaggingSerializer, MatchingResultSerializer
 from ..models import Wagging, Participant, Room, Team, Result, Member
 
 from simulated_annealing import random_team_assignment, simulated_annealing
@@ -25,7 +26,7 @@ def carrot_control_view(request, participant_id):
                 "message": f"존재하지 않는 참가자입니다. id: {participant_id}",
                 "detail": None,
             },
-            status=200,
+            status=404,
         )
 
     response_message = (
@@ -37,7 +38,7 @@ def carrot_control_view(request, participant_id):
     participant.save()
     return Response(
         data={
-            "status": "success",
+            "status": "ok",
             "code": 200,
             "data": {},
             "message": response_message,
@@ -77,7 +78,7 @@ def wagging_control_view(request):
         saved_wagging.delete()
         return Response(
             data={
-                "status": "success",
+                "status": "ok",
                 "code": 200,
                 "data": response_data,
                 "message": "꼬리 흔들기를 취소했습니다.",
@@ -92,7 +93,7 @@ def wagging_control_view(request):
         response_data = WaggingSerializer(new_wagging).data
         return Response(
             data={
-                "status": "success",
+                "status": "ok",
                 "code": 200,
                 "data": response_data,
                 "message": "꼬리 흔들기를 완료했습니다.",
@@ -105,8 +106,48 @@ def wagging_control_view(request):
 class MatchingView(APIView):
 
     def get(self, request, room_id):
-        pass
-        return Response("응답 예시")
+        matching_room = Room.objects.filter(id=room_id).first()
+
+        # 존재하지 않는 매칭룸을 요청
+        if not matching_room:
+            return Response(
+                data={
+                    "status": "not found",
+                    "code": 404,
+                    "data": {},
+                    "message": "매칭룸을 찾을 수 없습니다.",
+                    "detail": None,
+                },
+                status=404,
+            )
+
+        result = Result.objects.filter(room=matching_room).order_by("-id").first()
+
+        # 아직 매칭 내역이 없을 때
+        if not result:
+            return Response(
+                data={
+                    "status": "not found",
+                    "code": 404,
+                    "data": {},
+                    "message": "매칭룸에 매칭 내역이 존재하지 않습니다.",
+                    "detail": None,
+                },
+                status=404,
+            )
+
+        serializer = MatchingResultSerializer(result)
+
+        return Response(
+            data={
+                "status": "ok",
+                "code": 200,
+                "data": serializer.data,
+                "message": "매칭 결과를 조회에 성공했습니다.",
+                "detail": None,
+            },
+            status=200,
+        )
 
     def post(self, request, room_id):
         matching_room = Room.objects.filter(id=room_id).first()
@@ -121,34 +162,46 @@ class MatchingView(APIView):
                     "message": "매칭룸을 찾을 수 없습니다.",
                     "detail": None,
                 },
-                status=200,
+                status=404,
             )
-        participant_list = Participant.objects.filter(room=matching_room)
+        participant_list = list(Participant.objects.filter(room=matching_room).values())
         participant_ids = participant_list.values_list("id", flat=True)
-        waggings = Wagging.objects.filter(wagger__id__in=participant_ids)
+        waggings = list(Wagging.objects.filter(wagger__id__in=participant_ids).values())
         initial_team = random_team_assignment(participant_list)
         best_team_list, score = simulated_annealing(initial_team, waggings)
         explanations = get_matching_explanations(best_team_list, waggings)
 
         # 새로운 매칭 결과를 저장
-        result = Result.objects.create(room=matching_room)
-        for i, team in enumerate(best_team_list):
-            team_instance = Team.objects.create(
-                team_number=i + 1, result=result, explanation=explanations[i]
+        try:
+            with transaction.atomic():
+                result = Result.objects.create(room=matching_room)
+                for i, team in enumerate(best_team_list):
+                    team_instance = Team.objects.create(
+                        team_number=i + 1, result=result, explanation=explanations[i]
+                    )
+
+                    for member in team:
+                        Member.objects.create(team=team_instance, participant=member)
+            serializer = MatchingResultSerializer(result)
+            return Response(
+                data={
+                    "status": "ok",
+                    "code": 200,
+                    "data": serializer.data,
+                    "message": "매칭이 완료되었습니다.",
+                    "detail": None,
+                },
+                status=200,
             )
 
-            for member in team:
-                member_instance = Member.objects.create(
-                    team=team_instance, participant=member["id"]
-                )
-
-        return Response(
-            data={
-                "status": "ok",
-                "code": 200,
-                "data": {},
-                "message": "매칭룸을 찾을 수 없습니다.",
-                "detail": None,
-            },
-            status=200,
-        )
+        except Exception as e:
+            return Response(
+                data={
+                    "status": "internal server error",
+                    "code": 500,
+                    "data": {},
+                    "message": "매칭 결과를 저장하는 과정에서 오류가 발생했습니다.",
+                    "detail": str(e),
+                },
+                status=500,
+            )

@@ -30,7 +30,6 @@ INSTALLED_APPS = [
     "drf_yasg",
     "users.apps.UsersConfig",
     "matchings.apps.MatchingsConfig",
-
     # auth
     "rest_framework.authtoken",
     "django.contrib.sites",
@@ -41,7 +40,6 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.kakao",
     "dj_rest_auth",
     "dj_rest_auth.registration",
-
     # Channels
     "channels",
 ]
@@ -167,13 +165,11 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "users.auth.authentication.BearerTokenAuthentication",
     ),
-    "DEFAULT_RENDERER_CLASSES": (
-        "config.response_formats.CustomRenderer",
-    ),
+    "DEFAULT_RENDERER_CLASSES": ("config.response_formats.CustomRenderer",),
     "EXCEPTION_HANDLER": "config.response_formats.custom_exception_handler",
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated"
-    ],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
 }
 
 SOCIALACCOUNT_ADAPTER = "users.auth.adapter.CustomSocialAccountAdapter"
+
+ATOMIC_REQUEST = True
