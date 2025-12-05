@@ -1,11 +1,5 @@
 from math import log
-
-CATEGORY = {
-    # element: [name1, name2]
-    "team_vibe": ["learning", "professional"],
-    "active_hours": ["day", "night"],
-    "meeting_preference": ["online", "offline"],
-}
+from parameter import CATEGORY
 
 
 def get_category_score(team_list: list[list[dict]]) -> list[dict]:
@@ -36,7 +30,7 @@ def get_category_score(team_list: list[list[dict]]) -> list[dict]:
     category_score = []
 
     for team in team_list:
-        team_similarity = _get_team_similarity(team)
+        team_similarity = _get_team_category_rate(team)
         team_score = 0
 
         for key, values in team_similarity.items():
@@ -53,25 +47,24 @@ def get_category_score(team_list: list[list[dict]]) -> list[dict]:
     return category_score
 
 
-def _get_team_similarity(member_list: list[dict]) -> dict[dict]:
+def _get_team_category_rate(member_list: list[dict]) -> dict[dict]:
     """
-    한 팀의 카테고리 데이터 유사도를 반환
+    한 팀의 카테고리 데이터의 비율을 반환
 
-    input:
+    Args:
         - member_list = [
             {member1},
             {member2},
             ...
         ]
 
-    return:
+    Returns:
         - similarity = {
             "team_vibe": {"learning": 0.65, "professional": 0.35},
             "active_hours": {},
             "meeting_preference: {}
         }
     """
-    team_size = len(member_list)
 
     # 카테고리 개수를 저장할 딕셔너리
     team_category_count = {
