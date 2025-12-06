@@ -72,6 +72,7 @@ class Room(models.Model):
         max_length=30, choices=Status.choices, default=Status.PENDING
     )
     carrot_count = models.IntegerField(default=0)
+    wagging_start = models.BooleanField(default=False)
 
     class Meta:
         db_table = "room"
