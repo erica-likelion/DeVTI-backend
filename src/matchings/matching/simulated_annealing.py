@@ -46,7 +46,7 @@ def _get_team_template(participant_list: list[dict]) -> list[str, int]:
     for participant in participant_list:
         if participant.get("part") not in part_total:
             print(
-                f"id: {participant["id"]} 참가자의 파트를 구분할 수 없습니다. (해당 인원을 제외하고 팀 매팅 진행)"
+                f"id: {participant['id']} 참가자의 파트를 구분할 수 없습니다. (해당 인원을 제외하고 팀 매팅 진행)"
             )
             continue
         part_total[participant["part"]] += 1
