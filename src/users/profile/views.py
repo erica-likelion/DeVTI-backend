@@ -8,6 +8,7 @@ from django.db import transaction
 from users.models import *
 from matchings.models import Participant
 from .serializers import *
+from users.devti_data import DEVTI_QUESTIONS
 
 # 쿼리 파라미터와 해당 파트의 serializer/model/message를 매핑
 PART_DISPATCHER = {
@@ -264,7 +265,7 @@ class DevtiView(APIView):
         answers = serializer.validated_data['answers']
 
         # devti 결과 계산 함수에 넣어서 값 받아오기
-        new_devti = self.calculate_devti(answers)
+        normalized_scores, new_devti = self.calculate_devti(answers, DEVTI_QUESTIONS)
 
         # devti 업데이트/저장
         profile.devti = new_devti
@@ -285,9 +286,38 @@ class DevtiView(APIView):
 
         return Response(response_data, status=status_code)
 
-    def calculate_devti(self, answers):
-        """
-        추후에 질문 정해지면 devti 정해서 반환하는 함수 (현재는 임시 devti 반환만)
-        """
-        return "test_devti"
+    def calculate_devti(self, answers, questions):
+        scores = {"IE": 0, "NS": 0, "FT": 0, "PJ": 0}
+        counts = {"IE": 0, "NS": 0, "FT": 0, "PJ": 0}
 
+        for i, answer in enumerate(answers):
+            question = questions[i]
+            dimension = question["dimension"]
+            direction = question["direction"]
+
+            # direction이 뒤쪽 글자(E, S, T, J)면 그대로, 앞쪽이면 반전
+            if direction in ["E", "S", "T", "J"]:
+                scores[dimension] += answer
+            else:
+                scores[dimension] += 4 - answer
+            
+            counts[dimension] += 1
+
+        # 정규화 (0~1 범위)
+        max_score_per_dimension = 4 * 7  # 각 차원당 7개 질문, 최대 4점
+        
+        normalized = {
+            "ei": scores["IE"] / max_score_per_dimension,
+            "sn": scores["NS"] / max_score_per_dimension,
+            "tf": scores["FT"] / max_score_per_dimension,
+            "jp": scores["PJ"] / max_score_per_dimension,
+        }
+
+        # MBTI 타입 결정
+        mbti = ""
+        mbti += "E" if normalized["ei"] >= 0.5 else "I"
+        mbti += "N" if normalized["sn"] < 0.5 else "S"
+        mbti += "F" if normalized["tf"] < 0.5 else "T"
+        mbti += "P" if normalized["jp"] < 0.5 else "J"
+
+        return normalized, mbti

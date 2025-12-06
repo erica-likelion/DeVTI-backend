@@ -109,8 +109,8 @@ def _get_team_info_list(team_list, waggings):
                 if member2["id"] in waggees:
                     wagging_pairs.append(
                         [
-                            f"{member1["devti"]}({member1["part"]})",
-                            f"{member2["devti"]}({member2["part"]})",
+                            f"{member1['devti']}({member1['part']})",
+                            f"{member2['devti']}({member2['part']})",
                         ]
                     )
         team_info["wagging_pairs"] = wagging_pairs
