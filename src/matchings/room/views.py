@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
+from drf_yasg.utils import swagger_auto_schema
 
 from matchings.models import Room, Participant
 from .serializers import (
@@ -10,7 +11,7 @@ from .serializers import (
     RoomListSerializer,
     CodeValidationSerializer,
     AdminCodeValidationSerializer,
-    ParticipantCreateSerializer
+    ParticipantCreateSerializer,
 )
 from ..utils import generate_unique_code, validate_room_entry
 
@@ -20,10 +21,11 @@ class RoomView(APIView):
         """
         참여 중인 매칭룸 목록 조회
         """
-        participants = Participant.objects.filter(user_id=request.user)
+        participants = Participant.objects.filter(user=request.user)
         serializer = RoomListSerializer(participants, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=RoomCreateSerializer)
     def post(self, request):
         """
         매칭룸 생성
@@ -38,7 +40,7 @@ class RoomView(APIView):
             room = serializer.save(
                 participant_code=participant_code,
                 admin_code=admin_code,
-                status=Room.Status.PENDING
+                status=Room.Status.PENDING,
             )
 
             # 매칭룸 생성자를 ADMIN 역할로 Participant 자동 생성
@@ -74,9 +76,7 @@ class RoomDetailView(APIView):
 
         # 요청한 사용자가 해당 방의 ADMIN인지 확인
         is_admin = Participant.objects.filter(
-            room_id=room,
-            user_id=request.user,
-            role=Participant.Role.ADMIN
+            room_id=room, user_id=request.user, role=Participant.Role.ADMIN
         ).exists()
 
         if not is_admin:
@@ -86,6 +86,7 @@ class RoomDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@swagger_auto_schema(method="POST", request_body=CodeValidationSerializer)
 @api_view(["POST"])
 def validate_code_view(request):
     """
@@ -105,13 +106,17 @@ def validate_code_view(request):
     if not available_parts:
         raise ValidationError("작성된 프로필이 없습니다.")
 
-    return Response({
-        "message": "참여 가능한 매칭룸",
-        "room_id": room.id,
-        "available_parts": available_parts,
-    }, status=status.HTTP_200_OK)
+    return Response(
+        {
+            "message": "참여 가능한 매칭룸",
+            "room_id": room.id,
+            "available_parts": available_parts,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 
+@swagger_auto_schema(method="POST", request_body=ParticipantCreateSerializer)
 @api_view(["POST"])
 def room_join_view(request):
     """
@@ -140,6 +145,7 @@ def room_join_view(request):
     return Response({"message": "매칭룸 참여 완료"}, status=status.HTTP_201_CREATED)
 
 
+@swagger_auto_schema(method="POST", request_body=AdminCodeValidationSerializer)
 @api_view(["POST"])
 def room_join_admin_view(request):
     """
