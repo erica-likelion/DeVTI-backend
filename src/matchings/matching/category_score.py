@@ -1,5 +1,5 @@
 from math import log
-from parameter import CATEGORY
+from .parameter import CATEGORY
 
 
 def get_category_score(team_list: list[list[dict]]) -> list[dict]:
