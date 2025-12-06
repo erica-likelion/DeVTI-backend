@@ -1,7 +1,6 @@
-import json
-from parameter import CATEGORY, PART_MIN
-from category_score import _get_team_category_rate
-from wagging_score import _get_wagging_dict
+from .parameter import CATEGORY, PART_MIN
+from .category_score import _get_team_category_rate
+from .wagging_score import _get_wagging_dict
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from openai import OpenAI

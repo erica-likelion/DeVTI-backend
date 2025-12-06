@@ -8,8 +8,8 @@ from drf_yasg.utils import swagger_auto_schema
 from .serializers import WaggingSerializer, MatchingResultSerializer
 from ..models import Wagging, Participant, Room, Team, Result, Member
 
-from simulated_annealing import random_team_assignment, simulated_annealing
-from explain import get_matching_explanations
+from .simulated_annealing import random_team_assignment, simulated_annealing
+from .explain import get_matching_explanations
 
 
 @api_view(["POST"])

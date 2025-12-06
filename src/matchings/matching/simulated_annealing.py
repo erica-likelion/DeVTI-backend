@@ -1,9 +1,9 @@
 import random
 import math
 
-from category_score import get_category_score
-from wagging_score import get_wagging_score
-from parameter import TEAM_COUNT, PART_MIN
+from .category_score import get_category_score
+from .wagging_score import get_wagging_score
+from .parameter import TEAM_COUNT, PART_MIN
 
 
 def _get_team_template(participant_list: list[dict]) -> list[str, int]:
