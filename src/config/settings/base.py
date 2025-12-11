@@ -174,3 +174,15 @@ REST_FRAMEWORK = {
 SOCIALACCOUNT_ADAPTER = "users.auth.adapter.CustomSocialAccountAdapter"
 
 ATOMIC_REQUEST = True
+
+# [HTTPS 보안 설정]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://devti.site',
+    'https://www.devti.site',
+]
+
+# 세션/CSRF 쿠키를 HTTPS 전용으로 설정 
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
