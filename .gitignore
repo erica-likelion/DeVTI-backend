@@ -55,3 +55,6 @@ dist/
 
 ### 가상환경
 .venv
+
+### nginx
+nginx/nginx.conf
