@@ -102,7 +102,7 @@ class Team(models.Model):
         "Result", on_delete=models.CASCADE, db_column="result_id"
     )
     team_number = models.IntegerField()
-    explanation = models.TextField
+    explanation = models.TextField()
 
     class Meta:
         db_table = "team"

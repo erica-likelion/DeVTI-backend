@@ -29,6 +29,7 @@ schema_view = get_schema_view(
     openapi.Info(title="DevTI API", default_version="v1", description="DevTI 화이팅!!"),
     public=True,
     permission_classes=[AllowAny],
+    authentication_classes=[],  # Swagger 자체는 인증 불필요
 )
 
 
