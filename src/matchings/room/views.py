@@ -45,8 +45,8 @@ class RoomView(APIView):
 
             # 매칭룸 생성자를 ADMIN 역할로 Participant 자동 생성
             Participant.objects.create(
-                room_id=room,
-                user_id=request.user,
+                room=room,
+                user=request.user,
                 username=request.user.username,
                 role=Participant.Role.ADMIN,
                 part=None,
@@ -76,7 +76,7 @@ class RoomDetailView(APIView):
 
         # 요청한 사용자가 해당 방의 ADMIN인지 확인
         is_admin = Participant.objects.filter(
-            room_id=room, user_id=request.user, role=Participant.Role.ADMIN
+            room=room, user=request.user, role=Participant.Role.ADMIN
         ).exists()
 
         if not is_admin:
@@ -132,8 +132,8 @@ def room_join_view(request):
     room = validate_room_entry(user, participant_code, "participant")
 
     Participant.objects.create(
-        room_id=room,
-        user_id=user,
+        room=room,
+        user=user,
         username=user.username,
         role=Participant.Role.PARTICIPANT,
         part=serializer.validated_data["part"],
@@ -161,8 +161,8 @@ def room_join_admin_view(request):
     room = validate_room_entry(user, code, "admin")
 
     Participant.objects.create(
-        room_id=room,
-        user_id=user,
+        room=room,
+        user=user,
         username=user.username,
         role=Participant.Role.ADMIN,
         part=None,

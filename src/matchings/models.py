@@ -7,6 +7,10 @@ class Participant(models.Model):
     매칭 참가자 테이블
     """
 
+    class Role(models.TextChoices):
+        ADMIN = "ADMIN", "운영진"
+        PARTICIPANT = "PARTICIPANT", "참가자"
+
     room = models.ForeignKey("Room", on_delete=models.CASCADE, db_column="room_id")
     user = models.ForeignKey(
         "users.User", on_delete=models.CASCADE, db_column="user_id"

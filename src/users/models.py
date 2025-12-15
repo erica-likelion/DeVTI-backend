@@ -78,7 +78,7 @@ class Profile(models.Model):
     공통 프로필
     """
 
-    user_id = models.ForeignKey("User", on_delete=models.CASCADE)
+    user = models.ForeignKey("User", on_delete=models.CASCADE, db_column="user_id")
     devti = models.CharField(max_length=10, null=True)
     comment = models.TextField(null=True)
     ei = models.FloatField()
@@ -95,7 +95,9 @@ class ProfilePM(models.Model):
     PM 프로필
     """
 
-    profile_id = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, db_column="profile_id"
+    )
     experienced = models.TextField(null=True)  # "신입" 선택 시 null
     strength = models.TextField(null=True)
     daily_time_capacity = models.IntegerField(null=True)
@@ -112,7 +114,9 @@ class ProfileFE(models.Model):
     프론트엔드 프로필
     """
 
-    profile_id = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, db_column="profile_id"
+    )
     experienced = models.TextField(null=True)  # "신입" 선택 시 null
     strength = models.TextField(null=True)
     github_url = models.URLField(max_length=200, null=True)
@@ -127,7 +131,9 @@ class ProfileBE(models.Model):
     백엔드 프로필
     """
 
-    profile_id = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, db_column="profile_id"
+    )
     experienced = models.TextField(null=True)  # "신입" 선택 시 null
     strength = models.TextField(null=True)
     github_url = models.URLField(max_length=200, null=True)
@@ -142,7 +148,9 @@ class ProfileDE(models.Model):
     디자인 프로필
     """
 
-    profile_id = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, db_column="profile_id"
+    )
     experienced = models.TextField(null=True)  # "신입" 선택 시 null
     strength = models.TextField(null=True)
     portfolio_url = models.FileField(max_length=100, null=True)
