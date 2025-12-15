@@ -49,10 +49,14 @@ class RoomView(APIView):
                 user=request.user,
                 username=request.user.username,
                 role=Participant.Role.ADMIN,
-                part=None,
-                team_vibe=None,
-                active_hours=None,
-                meeting_preference=None,
+                part="PM",
+                team_vibe="",
+                active_hours="",
+                meeting_preference="",
+                ei=0,
+                sn=0,
+                tf=0,
+                jp=0,
             )
 
             response_data = {
