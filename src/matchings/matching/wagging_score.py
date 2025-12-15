@@ -21,7 +21,7 @@ def _get_wagging_dict(waggings: list[dict]) -> dict[set]:
     """
     wagging_dict: dict[int, set] = {}  # {wagger_id: (꼬리를 흔든 사람 목록)}
     for wagging in waggings:
-        wagger, waggee = wagging["wagger"], wagging["waggee"]
+        wagger, waggee = wagging["wagger_id"], wagging["waggee_id"]
         if wagger not in wagging_dict:
             wagging_dict[wagger] = set([waggee])
         else:

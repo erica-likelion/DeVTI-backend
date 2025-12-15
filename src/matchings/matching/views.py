@@ -164,8 +164,32 @@ class MatchingView(APIView):
                 },
                 status=404,
             )
-        participant_list = list(Participant.objects.filter(room=matching_room).values())
-        participant_ids = participant_list.values_list("id", flat=True)
+
+        # 참가자 목록을 profile의 mbti 수치로 구성
+        participants = Participant.objects.filter(room=matching_room).select_related(
+            "user"
+        )
+        participant_list = []
+        participant_ids = []
+        for p in participants:
+            profile = getattr(p.user, "profile_set", None)
+            if profile:
+                profile = profile.first()
+            participant_list.append(
+                {
+                    "id": p.id,
+                    "part": p.part,
+                    "team_vibe": p.team_vibe,
+                    "active_hours": p.active_hours,
+                    "meeting_preference": p.meeting_preference,
+                    "ei": profile.ei if profile else None,
+                    "sn": profile.sn if profile else None,
+                    "tf": profile.tf if profile else None,
+                    "jp": profile.jp if profile else None,
+                    "devti": profile.devti if profile else None,
+                }
+            )
+            participant_ids.append(p.id)
         waggings = list(Wagging.objects.filter(wagger__id__in=participant_ids).values())
         initial_team = random_team_assignment(participant_list)
         best_team_list, score = simulated_annealing(initial_team, waggings)
@@ -181,7 +205,10 @@ class MatchingView(APIView):
                     )
 
                     for member in team:
-                        Member.objects.create(team=team_instance, participant=member)
+                        participant_obj = Participant.objects.get(id=member["id"])
+                        Member.objects.create(
+                            team=team_instance, participant=participant_obj
+                        )
             serializer = MatchingResultSerializer(result)
             return Response(
                 data={

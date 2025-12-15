@@ -163,4 +163,4 @@ class MatchingResultSerializer(serializers.Serializer):
 
             result_data.append(team_members)
 
-        return result_data
+        return {"teams": result_data}
