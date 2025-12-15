@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError, ParseError, NotFound
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from users.models import *
 from matchings.models import Participant
 from .serializers import *
@@ -86,6 +88,17 @@ def participant_profile_view(request, participant_id):
 
 
 class ProfileView(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "part",
+                openapi.IN_QUERY,
+                description="PM, FE, BE, DE",
+                type=openapi.TYPE_STRING,
+                required=False,
+            )
+        ],
+    )
     def get(self, request):
         user = request.user
         part = request.query_params.get("part")
@@ -144,6 +157,35 @@ class ProfileView(APIView):
         response_data["message"] = message
         return Response(response_data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "experienced": openapi.Schema(type=openapi.TYPE_STRING),
+                "strength": openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(type=openapi.TYPE_STRING),
+                ),
+                "daily_time_capacity": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "weekly_time_capacity": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "design_understanding": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "development_understanding": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "github_url": openapi.Schema(type=openapi.TYPE_STRING),
+                "development_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "portfolio_url": openapi.Schema(type=openapi.TYPE_STRING),
+                "design_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+            },
+        ),
+        manual_parameters=[
+            openapi.Parameter(
+                "part",
+                openapi.IN_QUERY,
+                description="PM, FE, BE, DE",
+                type=openapi.TYPE_STRING,
+                required=True,
+            )
+        ],
+    )
     def post(self, request):
         user = request.user
         part = request.query_params.get("part")  # 쿼리 파라미터에서 part값 가져오기
@@ -202,6 +244,37 @@ class ProfileView(APIView):
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "username": openapi.Schema(type=openapi.TYPE_STRING),
+                "comment": openapi.Schema(type=openapi.TYPE_STRING),
+                "experienced": openapi.Schema(type=openapi.TYPE_STRING),
+                "strength": openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(type=openapi.TYPE_STRING),
+                ),
+                "daily_time_capacity": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "weekly_time_capacity": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "design_understanding": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "development_understanding": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "github_url": openapi.Schema(type=openapi.TYPE_STRING),
+                "development_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "portfolio_url": openapi.Schema(type=openapi.TYPE_STRING),
+                "design_score": openapi.Schema(type=openapi.TYPE_INTEGER),
+            },
+        ),
+        manual_parameters=[
+            openapi.Parameter(
+                "part",
+                openapi.IN_QUERY,
+                description="PM, FE, BE, DE",
+                type=openapi.TYPE_STRING,
+                required=False,
+            )
+        ],
+    )
     def put(self, request):
         user = request.user
         part = request.query_params.get("part")
@@ -285,9 +358,11 @@ class ProfileView(APIView):
 
 class DevtiView(APIView):
 
+    @swagger_auto_schema(request_body=DevtiTestSerializer)
     def post(self, request):
         return self.process_devti(request)
 
+    @swagger_auto_schema(request_body=DevtiTestSerializer)
     def put(self, request):
         return self.process_devti(request)
 
@@ -306,10 +381,15 @@ class DevtiView(APIView):
         answers = serializer.validated_data["answers"]
 
         # devti 결과 계산 함수에 넣어서 값 받아오기
+
         normalized_scores, new_devti = self.calculate_devti(answers, DEVTI_QUESTIONS)
 
-        # devti 업데이트/저장
+        # devti 및 MBTI 요소별 수치(float) 저장
         profile.devti = new_devti
+        profile.mbti_ei_score = normalized_scores["ei"]
+        profile.mbti_sn_score = normalized_scores["sn"]
+        profile.mbti_tf_score = normalized_scores["tf"]
+        profile.mbti_jp_score = normalized_scores["jp"]
         profile.save()
 
         # response_data 구성
