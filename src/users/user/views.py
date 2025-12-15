@@ -4,8 +4,11 @@ from rest_framework import status
 from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
 
-from matchings.models import Room, Result, Team, Member
-from .serializers import CarrotUsersResponseSerializer
+from matchings.models import Room, Result, Team, Member, Participant
+from .serializers import (
+    CarrotUsersResponseSerializer,
+    RoomParticipantsResponseSerializer,
+)
 
 
 @api_view(["GET"])
@@ -40,5 +43,41 @@ def get_carrot_users(request, room_id):
     }
 
     serializer = CarrotUsersResponseSerializer(response_data)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def get_room_users(request, room_id):
+    """
+    매칭룸 참가자 목록 조회 (프로필 정보 포함)
+    """
+    # 매칭룸 존재 확인
+    room = get_object_or_404(Room, id=room_id)
+
+    # 요청한 사용자의 Participant 객체 찾기
+    try:
+        request_participant = Participant.objects.get(room=room, user=request.user)
+    except Participant.DoesNotExist:
+        raise NotFound("해당 매칭룸에 참여하지 않은 사용자입니다.")
+
+    # 해당 룸의 참가자 목록 조회 (본인 제외)
+    participants = (
+        Participant.objects.filter(room=room)
+        .exclude(id=request_participant.id)
+        .select_related("user")
+    )
+
+    # Serializer에 context 전달
+    serializer = RoomParticipantsResponseSerializer(
+        {
+            "recommend_reason": "매칭룸에 참여 중인 다른 참가자들입니다.",
+            "participants": participants,
+        },
+        context={
+            "request_user": request.user,
+            "request_participant": request_participant,
+        },
+    )
 
     return Response(serializer.data, status=status.HTTP_200_OK)
