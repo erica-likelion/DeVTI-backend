@@ -20,6 +20,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 # Application definition
 INSTALLED_APPS = [
+    "daphne",
+    "corsheaders",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -45,6 +47,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -173,3 +176,24 @@ REST_FRAMEWORK = {
 SOCIALACCOUNT_ADAPTER = "users.auth.adapter.CustomSocialAccountAdapter"
 
 ATOMIC_REQUEST = True
+
+# [HTTPS 보안 설정]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# CORS 설정
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",          
+    "http://127.0.0.1:3000",
+    "https://devti-one.vercel.app",   
+    "https://www.devti.site",        
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://devti.site',
+    'https://www.devti.site',
+    "https://devti-one.vercel.app"
+]
+
+# 세션/CSRF 쿠키를 HTTPS 전용으로 설정 
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

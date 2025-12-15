@@ -13,6 +13,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   # MySQL
   db:
@@ -45,6 +47,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  redis:
+    image: redis:alpine
+    container_name: devti-redis
+    ports:
+      - "6379:6379"
 
 volumes:
   devti-db-data:
