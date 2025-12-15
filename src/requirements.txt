@@ -43,3 +43,4 @@ uritemplate==4.2.0
 urllib3==2.5.0
 daphne>=4.0.0
 django-cors-headers
+streamlit>=1.31.0
