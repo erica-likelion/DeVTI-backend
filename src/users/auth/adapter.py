@@ -25,6 +25,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         user.username = username_candidate
         user.save()
 
-        Profile.objects.create(user_id=user)
+        # Profile 생성 시 기본값 제공
+        Profile.objects.create(user=user, ei=0.5, sn=0.5, tf=0.5, jp=0.5)
 
         return user

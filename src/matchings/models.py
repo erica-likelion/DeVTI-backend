@@ -7,6 +7,10 @@ class Participant(models.Model):
     매칭 참가자 테이블
     """
 
+    class Role(models.TextChoices):
+        ADMIN = "ADMIN", "운영진"
+        PARTICIPANT = "PARTICIPANT", "참가자"
+
     room = models.ForeignKey("Room", on_delete=models.CASCADE, db_column="room_id")
     user = models.ForeignKey(
         "users.User", on_delete=models.CASCADE, db_column="user_id"
@@ -14,7 +18,7 @@ class Participant(models.Model):
     username = models.CharField(max_length=30)
     role = models.CharField(max_length=10)
     part = models.CharField(max_length=10)
-    team_vibe = models.CharField(max_length=10)
+    team_vibe = models.CharField(max_length=20)
     active_hours = models.CharField(max_length=10)
     meeting_preference = models.CharField(max_length=10)
     ei = models.FloatField()
@@ -72,6 +76,7 @@ class Room(models.Model):
         max_length=30, choices=Status.choices, default=Status.PENDING
     )
     carrot_count = models.IntegerField(default=0)
+    wagging_start = models.BooleanField(default=False)
 
     class Meta:
         db_table = "room"
@@ -97,7 +102,7 @@ class Team(models.Model):
         "Result", on_delete=models.CASCADE, db_column="result_id"
     )
     team_number = models.IntegerField()
-    explanation = models.TextField
+    explanation = models.TextField()
 
     class Meta:
         db_table = "team"

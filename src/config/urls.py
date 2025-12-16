@@ -29,6 +29,7 @@ schema_view = get_schema_view(
     openapi.Info(title="DevTI API", default_version="v1", description="DevTI 화이팅!!"),
     public=True,
     permission_classes=[AllowAny],
+    authentication_classes=[],  # Swagger 자체는 인증 불필요
 )
 
 
@@ -48,6 +49,7 @@ urlpatterns = [
     path("api/matching/", include("matchings.matching.urls")),
     path("api/room/", include("matchings.room.urls")),
     path("api/profile/", include("users.profile.urls")),
+    path("api/users/", include("users.user.urls")),
     path("api/auth/", include("dj_rest_auth.urls")),
     path("api/auth/kakao/", KakaoLogin.as_view(), name="kakao_login"),
     path("api/auth/google/", GoogleLogin.as_view(), name="google_login"),

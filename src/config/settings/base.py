@@ -95,8 +95,8 @@ DATABASES = {
     "default": {
         "ENGINE": os.getenv("DB_ENGINE"),
         "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "USER": "root",
+        "PASSWORD": os.getenv("DB_ROOT_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT"),
     }
@@ -170,7 +170,21 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_RENDERER_CLASSES": ("config.response_formats.CustomRenderer",),
     "EXCEPTION_HANDLER": "config.response_formats.custom_exception_handler",
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+}
+
+# Swagger 설정
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "Bearer 토큰을 입력하세요. 예: Bearer your_token_here",
+        }
+    },
+    "SECURITY_REQUIREMENTS": [{"Bearer": []}],  # 모든 API에 Bearer 인증 적용
+    "USE_SESSION_AUTH": False,
 }
 
 SOCIALACCOUNT_ADAPTER = "users.auth.adapter.CustomSocialAccountAdapter"
@@ -178,22 +192,22 @@ SOCIALACCOUNT_ADAPTER = "users.auth.adapter.CustomSocialAccountAdapter"
 ATOMIC_REQUEST = True
 
 # [HTTPS 보안 설정]
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # CORS 설정
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",          
+    "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://devti-one.vercel.app",   
-    "https://www.devti.site",        
+    "https://devti-one.vercel.app",
+    "https://www.devti.site",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://devti.site',
-    'https://www.devti.site',
-    "https://devti-one.vercel.app"
+    "https://devti.site",
+    "https://www.devti.site",
+    "https://devti-one.vercel.app",
 ]
 
-# 세션/CSRF 쿠키를 HTTPS 전용으로 설정 
+# 세션/CSRF 쿠키를 HTTPS 전용으로 설정
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
