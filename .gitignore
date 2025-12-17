@@ -58,3 +58,6 @@ dist/
 
 ### nginx
 nginx/nginx.conf
+
+### 개발용 문서
+TODO.md
