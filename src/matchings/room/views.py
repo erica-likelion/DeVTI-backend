@@ -5,6 +5,9 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
 from drf_yasg.utils import swagger_auto_schema
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 from matchings.models import Room, Participant
 from .serializers import (
     RoomCreateSerializer,
@@ -12,6 +15,7 @@ from .serializers import (
     CodeValidationSerializer,
     AdminCodeValidationSerializer,
     ParticipantCreateSerializer,
+    ParticipantDetailSerializer,
 )
 from ..utils import generate_unique_code, validate_room_entry
 
@@ -21,7 +25,8 @@ class RoomView(APIView):
         """
         참여 중인 매칭룸 목록 조회
         """
-        participants = Participant.objects.filter(user=request.user)
+        user = request.user
+        participants = Participant.objects.filter(user=user)
         serializer = RoomListSerializer(participants, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -32,6 +37,8 @@ class RoomView(APIView):
         """
         serializer = RoomCreateSerializer(data=request.data)
         if serializer.is_valid():
+            user = request.user
+
             # 입장 코드 생성
             participant_code = generate_unique_code(6, "participant")
             admin_code = generate_unique_code(8, "admin")
@@ -46,10 +53,10 @@ class RoomView(APIView):
             # 매칭룸 생성자를 ADMIN 역할로 Participant 자동 생성
             Participant.objects.create(
                 room=room,
-                user=request.user,
-                username=request.user.username,
+                user=user,
+                username=user.username,
                 role=Participant.Role.ADMIN,
-                part="PM",
+                part="",
                 team_vibe="",
                 active_hours="",
                 meeting_preference="",
@@ -135,7 +142,11 @@ def room_join_view(request):
     # 입장 코드 검증
     room = validate_room_entry(user, participant_code, "participant")
 
-    Participant.objects.create(
+    # 프로필 가져오기
+    profile = user.profile_set.first()
+
+    # 참가자 객체 생성
+    created_participant = Participant.objects.create(
         room=room,
         user=user,
         username=user.username,
@@ -144,7 +155,27 @@ def room_join_view(request):
         team_vibe=serializer.validated_data["team_vibe"],
         active_hours=serializer.validated_data["active_hours"],
         meeting_preference=serializer.validated_data["meeting_preference"],
+        ei=profile.ei,
+        sn=profile.sn,
+        tf=profile.tf,
+        jp=profile.jp,
     )
+
+    # --- 웹소켓 브로드캐스트 시작 ---
+    participant_data = ParticipantDetailSerializer(created_participant).data
+
+    channel_layer = get_channel_layer()
+    room_group_name = f"room_{room.id}"
+
+    # participant.new 이벤트를 해당 방 그룹에 브로드캐스트
+    async_to_sync(channel_layer.group_send)(
+        room_group_name,
+        {
+            "type": "participant.new",
+            "payload": participant_data,
+        },
+    )
+    # --- 웹소켓 브로드캐스트 종료 ---
 
     return Response({"message": "매칭룸 참여 완료"}, status=status.HTTP_201_CREATED)
 
@@ -169,10 +200,14 @@ def room_join_admin_view(request):
         user=user,
         username=user.username,
         role=Participant.Role.ADMIN,
-        part=None,
-        team_vibe=None,
-        active_hours=None,
-        meeting_preference=None,
+        part="",
+        team_vibe="",
+        active_hours="",
+        meeting_preference="",
+        ei=0,
+        sn=0,
+        tf=0,
+        jp=0,
     )
 
     return Response({"message": "운영진 참여 완료"}, status=status.HTTP_201_CREATED)
