@@ -44,7 +44,16 @@ def get_carrot_users(request, room_id):
 
     serializer = CarrotUsersResponseSerializer(response_data)
 
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(
+        {
+            "status": "success",
+            "code": 200,
+            "data": serializer.data,
+            "message": "carrot users fetched",
+            "detail": None,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 
 @api_view(["GET"])
@@ -80,4 +89,13 @@ def get_room_users(request, room_id):
         },
     )
 
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(
+        {
+            "status": "success",
+            "code": 200,
+            "data": serializer.data,
+            "message": "room users fetched",
+            "detail": None,
+        },
+        status=status.HTTP_200_OK,
+    )
