@@ -195,17 +195,18 @@ ATOMIC_REQUEST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # CORS 설정
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
     "https://devti-one.vercel.app",
     "https://www.devti.site",
+    "http://localhost:5173",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://devti.site",
     "https://www.devti.site",
     "https://devti-one.vercel.app",
+    "http://localhost:5173",
 ]
 
 # 세션/CSRF 쿠키를 HTTPS 전용으로 설정
