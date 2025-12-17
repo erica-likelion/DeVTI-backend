@@ -16,7 +16,7 @@ class Participant(models.Model):
         "users.User", on_delete=models.CASCADE, db_column="user_id"
     )
     username = models.CharField(max_length=30)
-    role = models.CharField(max_length=10)
+    role = models.CharField(max_length=20)
     part = models.CharField(max_length=10)
     team_vibe = models.CharField(max_length=20)
     active_hours = models.CharField(max_length=10)
