@@ -52,3 +52,20 @@ class AdminCodeValidationSerializer(serializers.Serializer):
     """
 
     admin_code = serializers.CharField(max_length=10)
+
+
+class ParticipantDetailSerializer(serializers.ModelSerializer):
+    """
+    웹소켓을 통해 전달될 참가자 정보 시리얼라이저
+    """
+
+    class Meta:
+        model = Participant
+        fields = (
+            "id",
+            "username",
+            "part",
+            "team_vibe",
+            "active_hours",
+            "meeting_preference",
+        )
