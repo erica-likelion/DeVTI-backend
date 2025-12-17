@@ -81,10 +81,10 @@ class Profile(models.Model):
     user = models.ForeignKey("User", on_delete=models.CASCADE, db_column="user_id")
     devti = models.CharField(max_length=10, null=True)
     comment = models.TextField(null=True)
-    ei = models.FloatField()
-    sn = models.FloatField()
-    tf = models.FloatField()
-    jp = models.FloatField()
+    ei = models.FloatField(null=True)
+    sn = models.FloatField(null=True)
+    tf = models.FloatField(null=True)
+    jp = models.FloatField(null=True)
 
     class Meta:
         db_table = "profile"
