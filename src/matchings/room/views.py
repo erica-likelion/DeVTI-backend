@@ -9,6 +9,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 from matchings.models import Room, Participant
+from matchings.matching.tasks import run_matching_task
 from .serializers import (
     RoomCreateSerializer,
     RoomListSerializer,
@@ -65,6 +66,9 @@ class RoomView(APIView):
                 tf=0,
                 jp=0,
             )
+
+            # Celery Task 스케줄링을 통해 매칭 시작 예약
+            run_matching_task.apply_async(args=[room.id], eta=room.matching_at)
 
             response_data = {
                 "participant_code": room.participant_code,

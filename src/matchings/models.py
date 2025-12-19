@@ -77,6 +77,7 @@ class Room(models.Model):
     )
     carrot_count = models.IntegerField(default=0)
     wagging_start = models.BooleanField(default=False)
+    rematch_count = models.IntegerField(default=0)
 
     class Meta:
         db_table = "room"

@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Django + Daphne
@@ -8,24 +8,24 @@ services:
     restart: always
     command: daphne -b 0.0.0.0 -p 8000 config.asgi:application
     expose:
-      - "8000"  
+      - "8000"
     env_file:
-      - .env    
+      - .env
     volumes:
-      - static_volume:/usr/src/app/staticfiles  
-      - media_volume:/usr/src/app/media         
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/media
     depends_on:
       db:
-        condition: service_healthy 
+        condition: service_healthy
       redis:
-        condition: service_started 
+        condition: service_started
 
   db:
     image: mysql:8.0
     container_name: devti-db
     restart: always
     volumes:
-      - devti-db-data:/var/lib/mysql  
+      - devti-db-data:/var/lib/mysql
     ports:
       - "3306:3306"
     environment:
@@ -57,21 +57,21 @@ services:
     container_name: devti-redis
     restart: always
     expose:
-      - "6379" 
+      - "6379"
 
   nginx:
     image: nginx:latest
     container_name: devti-nginx
     restart: always
     ports:
-      - "80:80"  
-      - "443:443" 
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf  
-      - static_volume:/usr/src/app/staticfiles   
-      - media_volume:/usr/src/app/media          
-      - ./data/certbot/conf:/etc/letsencrypt      
-      - ./data/certbot/www:/var/www/certbot       
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/media
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
     depends_on:
       - web
 
@@ -83,7 +83,29 @@ services:
       - ./data/certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
+  celery_worker:
+    image: imjiinsoo/devti-web:latest
+    container_name: devti-celery-worker
+    restart: always
+    command: celery -A config worker -l info --pool=prefork
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+
+  celery_beat:
+    image: imjiinsoo/devti-web:latest
+    container_name: devti-celery-beat
+    restart: always
+    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+
 volumes:
-  devti-db-data:  
-  static_volume:  
-  media_volume:   
+  devti-db-data:
+  static_volume:
+  media_volume:
