@@ -67,6 +67,56 @@ def carrot_control_view(request, participant_id):
     )
 
 
+@api_view(["POST"])
+def wagging_start_view(request, room_id):
+    user = request.user
+
+    # 매칭룸 및 참가자 조회
+    try:
+        room = Room.objects.get(id=room_id)
+        participant = Participant.objects.get(user=user, room=room)
+    except Room.DoesNotExist:
+        return Response(
+            {"message": "매칭룸을 찾을 수 없습니다."},
+            status=404,
+        )
+    except Participant.DoesNotExist:
+        return Response(
+            {"message": "해당 매칭룸의 참가자가 아닙니다."},
+            status=403,
+        )
+
+    # 운영진 권한 확인
+    if participant.role != Participant.Role.ADMIN:
+        return Response(
+            {"message": "운영진만 꼬리 흔들기를 시작할 수 있습니다."},
+            status=403,
+        )
+
+    # 매칭룸 상태 변경
+    room.status = Room.Status.WAGGING
+    room.save()
+
+    # 웹소켓 브로드캐스트
+    channel_layer = get_channel_layer()
+    room_group_name = f"room_{room_id}"
+    event = {
+        "type": "room_state_change",
+        "payload": {
+            "new_state": room.status,
+        }
+    }
+    async_to_sync(channel_layer.group_send)(room_group_name, event)
+
+    response_data = {
+        "message": "꼬리 흔들기 상태로 변경되었습니다.",
+        "room_id": room.id,
+        "status": room.status
+    }
+
+    return Response(response_data, status=200)
+
+
 @swagger_auto_schema(method="POST", request_body=WaggingSerializer)
 @api_view(["POST"])
 def wagging_control_view(request):
