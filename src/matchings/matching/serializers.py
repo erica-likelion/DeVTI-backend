@@ -161,6 +161,9 @@ class MatchingResultSerializer(serializers.Serializer):
                     }
                 )
 
-            result_data.append(team_members)
+            # 팀 정보에 explanation 필드 추가
+            result_data.append(
+                {"explanation": team.explanation, "members": team_members}
+            )
 
         return {"teams": result_data}
