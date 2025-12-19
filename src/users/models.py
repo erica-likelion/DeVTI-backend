@@ -55,22 +55,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         작성 완료한 파트별 프로필 목록 반환
         """
         parts = []
-        try:
-            profile = self.profile_set.first()
-
-            if hasattr(profile, "profilepm") and profile.profilepm is not None:
-                parts.append("PM")
-            if hasattr(profile, "profilefe") and profile.profilefe is not None:
-                parts.append("FE")
-            if hasattr(profile, "profilebe") and profile.profilebe is not None:
-                parts.append("BE")
-            if hasattr(profile, "profilede") and profile.profilede is not None:
-                parts.append("DE")
-
-            return parts
-
-        except Exception:
+        if not self.profile_set.exists():  # 공통 프로필이 없는 경우
             return []
+
+        profile = self.profile_set.first()
+
+        if profile.profilepm_set.exists():
+            parts.append("PM")
+        if profile.profilefe_set.exists():
+            parts.append("FE")
+        if profile.profilebe_set.exists():
+            parts.append("BE")
+        if profile.profilede_set.exists():
+            parts.append("DE")
+
+        return parts
 
 
 class Profile(models.Model):
@@ -138,6 +137,7 @@ class ProfileBE(models.Model):
     strength = models.TextField(null=True)
     github_url = models.URLField(max_length=200, null=True)
     development_score = models.JSONField(null=True, default=list)
+
     class Meta:
         db_table = "profile_be"
 
