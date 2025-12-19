@@ -101,3 +101,9 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         room.state_change 이벤트 핸들러
         '''
         await self.send_json(event)
+
+    async def carrot_new(self, event):
+        '''
+        carrot.new 이벤트 핸들러
+        '''
+        await self.send_json(event)

@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db import transaction
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -36,6 +38,23 @@ def carrot_control_view(request, participant_id):
     )
     participant.carrot = not participant.carrot
     participant.save()
+
+    # --- 웹소켓 브로드캐스트 시작 ---
+    channel_layer = get_channel_layer()
+    room_group_name = f"room_{participant.room.id}"
+
+    # carrot.new 이벤트를 해당 방 그룹에 브로드캐스트
+    async_to_sync(channel_layer.group_send)(
+        room_group_name,
+        {
+            "type": "carrot.new",
+            "payload": {
+                "participant_id": participant.id,
+            }
+        },
+    )
+    # --- 웹소켓 브로드캐스트 종료 ---
+
     return Response(
         data={
             "status": "ok",
