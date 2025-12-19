@@ -1,4 +1,4 @@
-import threading
+from .tasks import run_matching_task
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -132,7 +132,7 @@ def wagging_control_view(request):
                 "message": "꼬리 흔들기를 완료했습니다.",
                 **response_data
             },
-            status=200,
+            status=200
         )
 
 
@@ -148,10 +148,13 @@ class MatchingView(APIView):
             return Response({"message": "매칭룸에 매칭 내역이 존재하지 않습니다."}, status=404)
 
         serializer = MatchingResultSerializer(result)
-        return Response({
-            "message": "매칭 결과를 조회에 성공했습니다.",
-            **serializer.data
-        }, status=200)
+        return Response(
+            {
+                "message": "매칭 결과 조회 성공",
+                **serializer.data
+            },
+            status=200
+        )
 
     def post(self, request, room_id):
         user = request.user
@@ -166,6 +169,10 @@ class MatchingView(APIView):
         if participant.role != Participant.Role.ADMIN:
             return Response({"message": "운영진만 매칭을 시작할 수 있습니다."}, status=403)
 
+        if room.status != Room.Status.COMPLETED:
+            return Response({"message": f"현재 방 상태({room.status})에서는 리매칭을 시작할 수 없습니다."}, status=400)
+
+        # MATCHING 상태로 변경하고 브로드캐스트
         room.status = Room.Status.MATCHING
         room.save()
 
@@ -177,79 +184,52 @@ class MatchingView(APIView):
         }
         async_to_sync(channel_layer.group_send)(room_group_name, start_event)
 
-        thread = threading.Thread(target=self.run_matching_in_background, args=(room,))
-        thread.start()
+        # Celery Task로 매칭 실행
+        run_matching_task.delay(room.id)
 
-        return Response(
-            {"message": "매칭 시작"},
-            status=202,
-        )
+        return Response({"message": "매칭 시작"}, status=202)
 
-    def run_matching_in_background(self, matching_room):
-        room_group_name = f"room_{matching_room.id}"
-        channel_layer = get_channel_layer()
 
-        participants = Participant.objects.filter(room=matching_room).select_related("user")
-        participant_list = []
-        participant_ids = []
-        for p in participants:
-            profile = getattr(p.user, "profile_set", None)
-            if profile:
-                profile = profile.first()
-            participant_list.append(
-                {
-                    "id": p.id,
-                    "part": p.part,
-                    "team_vibe": p.team_vibe,
-                    "active_hours": p.active_hours,
-                    "meeting_preference": p.meeting_preference,
-                    "ei": profile.ei if profile else None,
-                    "sn": profile.sn if profile else None,
-                    "tf": profile.tf if profile else None,
-                    "jp": profile.jp if profile else None,
-                    "devti": profile.devti if profile else None,
-                }
-            )
-            participant_ids.append(p.id)
+@api_view(["POST"])
+def close_room_view(request, room_id):
+    user = request.user
 
-        waggings = list(
-            Wagging.objects.filter(wagger__id__in=participant_ids).values(
-                "wagger", "waggee"
-            )
-        )
-        initial_team = random_team_assignment(participant_list)
-        best_team_list, score = simulated_annealing(initial_team, waggings)
-        explanations = get_matching_explanations(best_team_list, waggings)
+    # 매칭룸 및 참가자 조회
+    try:
+        room = Room.objects.get(id=room_id)
+        participant = Participant.objects.get(user=user, room=room)
+    except Room.DoesNotExist:
+        return Response({"message": "매칭룸을 찾을 수 없습니다."}, status=404)
+    except Participant.DoesNotExist:
+        return Response({"message": "해당 매칭룸의 참가자가 아닙니다."}, status=403)
 
-        # 새로운 매칭 결과를 저장
-        try:
-            with transaction.atomic():
-                result = Result.objects.create(room=matching_room)
-                for i, team in enumerate(best_team_list):
-                    team_instance = Team.objects.create(
-                        team_number=i + 1,
-                        result=result,
-                        explanation=explanations[i].reason,
-                    )
-                    for member in team:
-                        participant_obj = Participant.objects.get(id=member["id"])
-                        Member.objects.create(
-                            team=team_instance, participant=participant_obj
-                        )
+    # 운영진 권한 확인
+    if participant.role != Participant.Role.ADMIN:
+        return Response({"message": "운영진만 매칭 결과를 확정할 수 있습니다."}, status=403)
 
-            matching_room.status = Room.Status.COMPLETED
-            matching_room.save()
-            complete_event = {
-                "type": "room_state_change",
-                "payload": {"new_state": matching_room.status},
-            }
-            async_to_sync(channel_layer.group_send)(room_group_name, complete_event)
+    # 매칭룸 상태가 COMPLETED인지 확인
+    if room.status != Room.Status.COMPLETED:
+        return Response({"message": f"현재 매칭룸 상태({room.status})에서는 매칭 결과를 확정할 수 없습니다."}, status=400)
 
-        except Exception as e:
-            matching_room.status = Room.Status.PENDING
-            matching_room.save()
-            error_event = {
-                "type": "room_state_change",
-                "payload": {"new_state": matching_room.status, "error": f"매칭 중 알 수 없는 오류가 발생했습니다: {str(e)}"},
-            }
-            async_to_sync(channel_layer.group_send)(room_group_name, error_event)
+    # 매칭룸 상태 변경 및 저장
+    room.status = Room.Status.CLOSED
+    room.save()
+
+    # 웹소켓 브로드캐스트
+    channel_layer = get_channel_layer()
+    room_group_name = f"room_{room_id}"
+    event = {
+        "type": "room_state_change",
+        "payload": {
+            "new_state": room.status,
+        }
+    }
+    async_to_sync(channel_layer.group_send)(room_group_name, event)
+
+    response_data = {
+        "message": "매칭 결과 확정 (status = CLOSED)",
+        "room_id": room.id,
+        "status": room.status
+    }
+
+    return Response(response_data, status=200)
