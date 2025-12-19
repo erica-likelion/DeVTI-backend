@@ -158,14 +158,13 @@ class MatchingView(APIView):
                 data={
                     "status": "not found",
                     "code": 404,
-                    "data": {},
+                    "data": [],
                     "message": "매칭룸을 찾을 수 없습니다.",
                     "detail": None,
                 },
                 status=404,
             )
 
-        # 참가자 목록을 profile의 mbti 수치로 구성
         participants = Participant.objects.filter(room=matching_room).select_related(
             "user"
         )
@@ -190,6 +189,7 @@ class MatchingView(APIView):
                 }
             )
             participant_ids.append(p.id)
+
         waggings = list(Wagging.objects.filter(wagger__id__in=participant_ids).values())
         initial_team = random_team_assignment(participant_list)
         best_team_list, score = simulated_annealing(initial_team, waggings)
@@ -205,16 +205,16 @@ class MatchingView(APIView):
                         result=result,
                         explanation=explanations[i].reason,
                     )
-
                     for member in team:
                         participant_obj = Participant.objects.get(id=member["id"])
                         Member.objects.create(
                             team=team_instance, participant=participant_obj
                         )
+
             serializer = MatchingResultSerializer(result)
             return Response(
                 data={
-                    "status": "ok",
+                    "status": "success",
                     "code": 200,
                     "data": serializer.data,
                     "message": "매칭이 완료되었습니다.",
@@ -228,7 +228,7 @@ class MatchingView(APIView):
                 data={
                     "status": "internal server error",
                     "code": 500,
-                    "data": {},
+                    "data": [],
                     "message": "매칭 결과를 저장하는 과정에서 오류가 발생했습니다.",
                     "detail": str(e),
                 },
