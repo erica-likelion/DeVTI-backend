@@ -201,9 +201,7 @@ class MatchingView(APIView):
                 result = Result.objects.create(room=matching_room)
                 for i, team in enumerate(best_team_list):
                     team_instance = Team.objects.create(
-                        team_number=i + 1,
-                        result=result,
-                        explanation=explanations[i].reason,
+                        team_number=i + 1, result=result, explanation=explanations[i]
                     )
 
                     for member in team:
