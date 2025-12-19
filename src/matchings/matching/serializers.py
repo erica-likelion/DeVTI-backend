@@ -52,7 +52,7 @@ class MatchingResultSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         """
-        Result 인스턴스를 받아서 팀별 멤버 정보를 반환
+        Result 인스턴스를 받아서 팀별 멤버 정보와 팀 번호, explanation을 반환
         """
         teams = Team.objects.filter(result=instance).order_by("team_number")
         result_data = []
@@ -161,9 +161,12 @@ class MatchingResultSerializer(serializers.Serializer):
                     }
                 )
 
-            # 팀 정보에 explanation 필드 추가
             result_data.append(
-                {"explanation": team.explanation, "members": team_members}
+                {
+                    "team_number": team.team_number,
+                    "explanation": team.explanation,
+                    "members": team_members,
+                }
             )
 
         return {"teams": result_data}
