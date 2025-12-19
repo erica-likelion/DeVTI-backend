@@ -180,7 +180,7 @@ def room_join_view(request):
     return Response(
         {
             "message": "매칭룸 참여 완료",
-            "matching_at": getattr(room, "matching_at", None),
+            "matching_at": room.matching_at,
         },
         status=status.HTTP_201_CREATED,
     )
