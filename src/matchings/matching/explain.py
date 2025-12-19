@@ -71,7 +71,7 @@ def _get_team_info_list(team_list, waggings):
     wagging_dict = _get_wagging_dict(waggings)
 
     for team in team_list:
-        team_info = {part: 0 for part in PART_MIN}
+        team_info = {part: 0 for part in PART_MIN.keys()}
 
         # 파트별 인원수
         for member in team:
@@ -259,7 +259,7 @@ wagging(와깅), team_vibe, learning 등 코드에서 사용했던 단어는 설
 자기자신에게 꼬리를 흔드는 것은 불가능해. 설명 생성에 주의해줘.
 
 
-team_info_list = """
+team_info_list: """
 
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     response = client.beta.chat.completions.parse(

@@ -21,7 +21,7 @@ def _get_wagging_dict(waggings: list[dict]) -> dict[set]:
     """
     wagging_dict: dict[int, set] = {}  # {wagger_id: (꼬리를 흔든 사람 목록)}
     for wagging in waggings:
-        wagger, waggee = wagging["wagger_id"], wagging["waggee_id"]
+        wagger, waggee = wagging["wagger"], wagging["waggee"]
         if wagger not in wagging_dict:
             wagging_dict[wagger] = set([waggee])
         else:
@@ -58,9 +58,8 @@ def get_wagging_score(team_list, waggings) -> tuple[list]:
 
         - waggings = [
             {
-                "id": 1,
-                "wagger": 1,
-                "waggee": 3
+                "wagger_id": 1,
+                "waggee_id": 3
             },
             {wagging info},
             {wagging info}
@@ -85,7 +84,7 @@ def get_wagging_score(team_list, waggings) -> tuple[list]:
             waggees = wagging_dict.get(id, set())
 
             for other_id in wagging_count.keys():
-                if id == waggees:
+                if id == other_id:
                     continue
                 if other_id in waggees:
                     wagging_count[id] += 1

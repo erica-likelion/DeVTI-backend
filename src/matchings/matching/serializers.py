@@ -169,4 +169,4 @@ class MatchingResultSerializer(serializers.Serializer):
                 }
             )
 
-        return result_data
+        return {"teams": result_data}
