@@ -207,4 +207,5 @@ class RoomParticipantsResponseSerializer(serializers.Serializer):
     """
 
     recommend_reason = serializers.CharField()
+    matching_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
     participants = ParticipantWithProfileSerializer(many=True)

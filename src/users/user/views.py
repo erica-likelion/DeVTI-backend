@@ -77,10 +77,11 @@ def get_room_users(request, room_id):
         .select_related("user")
     )
 
-    # Serializer에 context 전달
+    # Serializer에 context 전달 및 matching_at 추가
     serializer = RoomParticipantsResponseSerializer(
         {
             "recommend_reason": "매칭룸에 참여 중인 다른 참가자들입니다.",
+            "matching_at": room.matching_at,
             "participants": participants,
         },
         context={
