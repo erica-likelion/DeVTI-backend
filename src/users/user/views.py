@@ -11,6 +11,25 @@ from .serializers import (
 )
 
 
+@api_view(["DELETE"])
+def delete_participant(request, participant_id):
+    """
+    participant_id로 참가자 삭제
+    """
+    participant = get_object_or_404(Participant, id=participant_id)
+    participant.delete()
+    return Response(
+        {
+            "status": "success",
+            "code": 204,
+            "data": None,
+            "message": "participant deleted",
+            "detail": None,
+        },
+        status=status.HTTP_204_NO_CONTENT,
+    )
+
+
 @api_view(["GET"])
 def get_carrot_users(request, room_id):
     """
