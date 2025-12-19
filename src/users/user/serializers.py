@@ -80,7 +80,7 @@ class ProfileDetailSerializer(serializers.Serializer):
     development_score = serializers.CharField(required=False, allow_null=True)
 
     # DE 프로필 필드
-    portfolio_url = serializers.FileField(required=False, allow_null=True)
+    portfolio_url = serializers.URLField(required=False, allow_null=True)
     design_score = serializers.IntegerField(required=False, allow_null=True)
 
 
@@ -185,11 +185,19 @@ class ParticipantWithProfileSerializer(serializers.ModelSerializer):
             elif part == "DE":
                 try:
                     part_profile = ProfileDE.objects.get(profile=profile)
+                    # ✅ 파일 객체를 URL 문자열로 변환
+                    portfolio_url = None
+                    if part_profile.portfolio_url:
+                        try:
+                            portfolio_url = part_profile.portfolio_url.url
+                        except ValueError:
+                            portfolio_url = None
+
                     profile_data.update(
                         {
                             "experienced": part_profile.experienced,
                             "strength": part_profile.strength,
-                            "portfolio_url": part_profile.portfolio_url,
+                            "portfolio_url": portfolio_url,  # URL 문자열 또는 None
                             "design_score": part_profile.design_score,
                         }
                     )
