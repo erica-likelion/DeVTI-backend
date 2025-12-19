@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 from matchings.models import Room, Result, Team, Member, Participant
 from .serializers import (
@@ -17,15 +19,22 @@ def delete_participant(request, participant_id):
     participant_id로 참가자 삭제
     """
     participant = get_object_or_404(Participant, id=participant_id)
+    room_id = participant.room.id
     participant.delete()
-    return Response(
-        {
-            "status": "success",
-            "code": 204,
-            "data": None,
-            "message": "participant deleted",
-            "detail": None,
+
+    # 참가자 삭제 이벤트 브로드캐스트
+    channel_layer = get_channel_layer()
+    room_group_name = f"room_{room_id}"
+    event = {
+        "type": "participant.delete",
+        "payload": {
+            "participant_id": participant_id,
         },
+    }
+    async_to_sync(channel_layer.group_send)(room_group_name, event)
+
+    return Response(
+        {"message": "참가자 삭제 성공"},
         status=status.HTTP_204_NO_CONTENT,
     )
 

@@ -96,6 +96,12 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         '''
         await self.send_json(event)
 
+    async def participant_delete(self, event):
+        '''
+        participant.delete 이벤트 핸들러
+        '''
+        await self.send_json(event)
+
     async def room_state_change(self, event):
         '''
         room.state_change 이벤트 핸들러
