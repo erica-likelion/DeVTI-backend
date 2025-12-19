@@ -177,7 +177,13 @@ def room_join_view(request):
     )
     # --- 웹소켓 브로드캐스트 종료 ---
 
-    return Response({"message": "매칭룸 참여 완료"}, status=status.HTTP_201_CREATED)
+    return Response(
+        {
+            "message": "매칭룸 참여 완료",
+            "matching_at": getattr(room, "matching_at", None),
+        },
+        status=status.HTTP_201_CREATED,
+    )
 
 
 @swagger_auto_schema(method="POST", request_body=AdminCodeValidationSerializer)
