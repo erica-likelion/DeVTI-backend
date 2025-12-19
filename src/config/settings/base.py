@@ -193,28 +193,6 @@ SOCIALACCOUNT_ADAPTER = "users.auth.adapter.CustomSocialAccountAdapter"
 
 ATOMIC_REQUEST = True
 
-# [HTTPS 보안 설정]
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-# CORS 설정
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "https://devti-one.vercel.app",
-    "https://www.devti.site",
-    "http://localhost:5173",
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://devti.site",
-    "https://www.devti.site",
-    "https://devti-one.vercel.app",
-    "http://localhost:5173",
-]
-
-# 세션/CSRF 쿠키를 HTTPS 전용으로 설정
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-
 # Celery 설정
 CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://localhost:6379/1")
 CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis://localhost:6379/1")
